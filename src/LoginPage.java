@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class LoginPage extends CustomFrame {
     public LoginPage(String pageTitle) {
@@ -29,6 +30,8 @@ public class LoginPage extends CustomFrame {
                     try {
                         new Client("localhost", 3000, username);
                     } catch (IOException e1) {
+                        e1.printStackTrace();
+                    } catch (SQLException e1) {
                         e1.printStackTrace();
                     }
                 });

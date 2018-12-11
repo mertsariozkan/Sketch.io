@@ -1,7 +1,7 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DatabaseOperations {
 
@@ -18,6 +18,16 @@ public class DatabaseOperations {
 
         statement.execute(createQuestionsTable);
 
+        String createClientsTable = "CREATE TABLE IF NOT EXISTS clients (\n"
+                + " id integer primary key,\n"
+                + " clientName text not null,\n"
+                + " score integer\n"
+                + ");";
+
+        Statement statementClients = connection.createStatement();
+        statementClients.execute(createClientsTable);
+
+
     }
 
     public void connectToDatabase(){
@@ -31,6 +41,29 @@ public class DatabaseOperations {
                 e.printStackTrace();
             }
 
+    }
+
+    public void insertClient(String clientName , int score) throws SQLException {
+        String insertQuery = "INSERT INTO clients(clientName,score) VALUES(?,?)";
+
+        PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
+
+        preparedStatement.setString(1 , clientName);
+        preparedStatement.setInt(2  , score);
+        preparedStatement.executeUpdate();
+    }
+    public HashMap<String , Integer> getClients() throws SQLException {
+
+        HashMap<String, Integer> clientsMap = new HashMap<>();
+
+        String selectQuery = "SELECT * FROM clients";
+        Statement statement = connection.createStatement();
+        ResultSet set = statement.executeQuery(selectQuery);
+
+        while (set.next()){
+            clientsMap.put(set.getString("clientName") , set.getInt("score"));
+        }
+        return clientsMap;
     }
 
 

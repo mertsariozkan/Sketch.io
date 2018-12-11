@@ -1,3 +1,4 @@
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -8,7 +9,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class Server {
     static CopyOnWriteArrayList<PrintWriter> outputs;
 
-    public Server(int port) throws IOException {
+    static ArrayList<String> userList = new ArrayList<>();
+    public Server(int port) throws IOException, SQLException {
+
         ServerSocket server = new ServerSocket(port);
         outputs = new CopyOnWriteArrayList<>();
         while (true) {
@@ -31,7 +34,7 @@ public class Server {
 
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException {
         new Server(3000);
 
     }

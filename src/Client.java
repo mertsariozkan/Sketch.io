@@ -9,9 +9,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TimerTask;
 import java.util.Timer;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Client {
     private Socket socket;
@@ -19,17 +22,27 @@ public class Client {
     private PrintWriter output;
     int oldX, oldY, currentX, currentY;
     private JPanel panel;
-    private ArrayList<String> coordinates;
+    private CopyOnWriteArrayList<String> coordinates;
     private Timer timer;
     private DrawPage drawingPage;
     private String nickname;
+    DatabaseOperations databaseOperations;
+    HashMap<String , Integer> clients;
+    public Client(String ip, int port, String nickname) throws IOException, SQLException {
 
-    public Client(String ip, int port, String nickname) throws IOException {
+
+
 
         this.nickname = nickname;
 
-        coordinates = new ArrayList<>();
+        coordinates = new CopyOnWriteArrayList<>();
         drawingPage = new DrawPage("SKETCH.IO");
+        databaseOperations = new DatabaseOperations();
+        clients = databaseOperations.getClients();
+        for (String client : clients.keySet()){
+            drawingPage.tableModel.addRow(new Object[]{client,clients.get(client)});
+        }
+
         panel = drawingPage.canvas;
 
         drawingPage.addWindowListener(new WindowAdapter() {
@@ -83,6 +96,8 @@ public class Client {
         output.println("usr" + nickname);
         output.flush();
 
+
+
         timer = new Timer();
         TimerTask job = new TimerTask() {
             @Override
@@ -97,17 +112,17 @@ public class Client {
         try {
             while ((message = input.readLine()) != null) {
 
+
                 if (message.contains("msg")){
                     message = message.substring(3);
                     drawingPage.chatArea.append(message+"\n");
-
                 }
-                else if(message.contains("usr")){
+                else if (message.contains("usr")){
                     message = message.substring(3);
                     drawingPage.tableModel.addRow(new Object[]{message , 0});
                 }
                 else {
-                    if (message != "") {
+                    if (!message.equals("")) {
 
                         message = message.replaceAll("\\s+", "");
                         message = message.substring(1, message.length() - 1);
