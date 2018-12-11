@@ -3,9 +3,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Server {
-    static ArrayList<PrintWriter> outputs = new ArrayList<>();
+    static CopyOnWriteArrayList<PrintWriter> outputs = new CopyOnWriteArrayList<>();
 
     public Server(int port) throws IOException {
         ServerSocket server = new ServerSocket(port);
@@ -29,8 +30,7 @@ public class Server {
 
     }
 
-    public static void main(String[] args) throws IOException, SQLException {
-        new DatabaseOperations();
+    public static void main(String[] args) throws IOException {
         new Server(3000);
 
     }

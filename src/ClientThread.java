@@ -7,7 +7,7 @@ public class ClientThread extends Thread {
     private Socket socket;
     private BufferedReader input;
     private PrintWriter output;
-    boolean listening = true;
+
     public ClientThread(Socket socket, BufferedReader input, PrintWriter output) {
         this.socket = socket;
         this.input = input;
@@ -15,12 +15,11 @@ public class ClientThread extends Thread {
     }
 
     @Override
-    public synchronized void run() {
-        while (listening) {
+    public void run() {
+        while (true) {
             try {
                 String message;
                 while ((message = input.readLine()) != null) {
-                    //System.out.println(message);
                     for (PrintWriter o : Server.outputs) {
                         o.println(message);
                         o.flush();
@@ -28,21 +27,11 @@ public class ClientThread extends Thread {
 
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("A client disconnected.");
+                Server.outputs.remove(output);
+                break;
             }
-            // Closing socket/streams
-            finally {
 
-                output.close();
-                try {
-                    Server.outputs.remove(output);
-                    input.close();
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
         }
 
 
