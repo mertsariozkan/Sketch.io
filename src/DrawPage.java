@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class DrawPage extends CustomFrame{
@@ -7,6 +8,7 @@ public class DrawPage extends CustomFrame{
     JTextArea chatArea;
     JButton sendButton;
     JTextArea messageField;
+    DefaultTableModel tableModel ;
     public DrawPage(String pageTitle) {
         super(pageTitle);
 
@@ -41,8 +43,10 @@ public class DrawPage extends CustomFrame{
 
 
         String[] columnNames = {"Player Name" , "Score" , "Turn" };
-        String[][] clients = {{"Mert","102","<-" }, {"Kubilay","99",""}};
-        JTable clientTable = new JTable(clients , columnNames);
+        tableModel = new DefaultTableModel(columnNames , 0);
+        JTable clientTable = new JTable(tableModel);
+
+
 
         // Creatin 'PANEL_TABLE'.
         JPanel tableHolder = new JPanel();

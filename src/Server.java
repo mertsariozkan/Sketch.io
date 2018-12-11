@@ -6,13 +6,14 @@ import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Server {
-    static CopyOnWriteArrayList<PrintWriter> outputs = new CopyOnWriteArrayList<>();
+    static CopyOnWriteArrayList<PrintWriter> outputs;
 
     public Server(int port) throws IOException {
         ServerSocket server = new ServerSocket(port);
-
+        outputs = new CopyOnWriteArrayList<>();
         while (true) {
             Socket connectionSocket;
+
             try {
                 connectionSocket = server.accept();
 

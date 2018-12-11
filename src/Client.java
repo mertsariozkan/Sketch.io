@@ -22,8 +22,11 @@ public class Client {
     private ArrayList<String> coordinates;
     private Timer timer;
     private DrawPage drawingPage;
+    private String nickname;
 
-    public Client(String ip, int port) throws IOException {
+    public Client(String ip, int port, String nickname) throws IOException {
+
+        this.nickname = nickname;
 
         coordinates = new ArrayList<>();
         drawingPage = new DrawPage("SKETCH.IO");
@@ -44,7 +47,7 @@ public class Client {
 
         drawingPage.sendButton.addActionListener(e -> {
             if (!drawingPage.messageField.getText().isEmpty()){
-                String clientMsg ="msg" + drawingPage.messageField.getText();
+                String clientMsg ="msg" + nickname+": " + drawingPage.messageField.getText();
                 output.println(clientMsg);
                 output.flush();
                 drawingPage.messageField.setText("");
@@ -77,7 +80,8 @@ public class Client {
         input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         output = new PrintWriter(socket.getOutputStream(), true);
 
-
+        output.println("usr" + nickname);
+        output.flush();
 
         timer = new Timer();
         TimerTask job = new TimerTask() {
@@ -92,10 +96,15 @@ public class Client {
         String message;
         try {
             while ((message = input.readLine()) != null) {
+
                 if (message.contains("msg")){
                     message = message.substring(3);
                     drawingPage.chatArea.append(message+"\n");
 
+                }
+                else if(message.contains("usr")){
+                    message = message.substring(3);
+                    drawingPage.tableModel.addRow(new Object[]{message , 0});
                 }
                 else {
                     if (message != "") {
@@ -134,9 +143,6 @@ public class Client {
         }
 
 
-    }
-    public static void main(String[] args) throws IOException {
-        new Client("localhost", 3000);
     }
 
 

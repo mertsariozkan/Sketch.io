@@ -20,6 +20,7 @@ public class ClientThread extends Thread {
             try {
                 String message;
                 while ((message = input.readLine()) != null) {
+
                     for (PrintWriter o : Server.outputs) {
                         o.println(message);
                         o.flush();
