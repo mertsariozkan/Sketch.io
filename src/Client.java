@@ -1,8 +1,9 @@
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,6 +28,20 @@ public class Client {
         coordinates = new ArrayList<>();
         drawingPage = new DrawPage("SKETCH.IO");
         panel = drawingPage.canvas;
+
+        drawingPage.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                try {
+                    input.close();
+                    output.close();
+                    socket.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+
         drawingPage.sendButton.addActionListener(e -> {
             if (!drawingPage.messageField.getText().isEmpty()){
                 String clientMsg ="msg" + drawingPage.messageField.getText();
@@ -67,7 +82,7 @@ public class Client {
         timer = new Timer();
         TimerTask job = new TimerTask() {
             @Override
-            public synchronized void run() {
+            public void run() {
                 output.println(coordinates);
                 coordinates.clear();
             }
