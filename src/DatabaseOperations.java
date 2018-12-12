@@ -67,9 +67,11 @@ public class DatabaseOperations {
     }
 
 
-    public String selectRandomQuestion(){
+    public void deleteClient(String nickName) throws SQLException {
+        String deleteQuery = "DELETE FROM clients WHERE name = ?";
 
-
-        return "";
+        PreparedStatement preparedStatementDelete = connection.prepareStatement(deleteQuery);
+        preparedStatementDelete.setString(1 , nickName);
+        preparedStatementDelete.executeUpdate();
     }
 }

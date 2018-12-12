@@ -36,6 +36,7 @@ public class ClientThread extends Thread {
                 }
             } catch (IOException e) {
                 System.out.println("A client disconnected.");
+
                 Server.outputs.remove(output);
                 break;
             } catch (SQLException e) {

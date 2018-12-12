@@ -29,10 +29,6 @@ public class Client {
     DatabaseOperations databaseOperations;
     HashMap<String , Integer> clients;
     public Client(String ip, int port, String nickname) throws IOException, SQLException {
-
-
-
-
         this.nickname = nickname;
 
         coordinates = new CopyOnWriteArrayList<>();
@@ -49,10 +45,14 @@ public class Client {
             @Override
             public void windowClosed(WindowEvent e) {
                 try {
+
+                    databaseOperations.deleteClient(nickname);
                     input.close();
                     output.close();
                     socket.close();
                 } catch (IOException e1) {
+                    e1.printStackTrace();
+                } catch (SQLException e1) {
                     e1.printStackTrace();
                 }
             }
