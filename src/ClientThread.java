@@ -24,10 +24,13 @@ public class ClientThread extends Thread {
             try {
                 String message;
                 while ((message = input.readLine()) != null) {
-                    if (message.contains("usr")){
-                        System.out.println(message);
-                        databaseOperations.insertClient(message.substring(3), 0) ;
+                    if(message.equals("skipmyturn")) {
+                        Server.skip = true;
+                        for (PrintWriter o : Server.outputs){
+                            o.println("stp");
+                        }
                     }
+
                     for (PrintWriter o : Server.outputs) {
                         o.println(message);
                         o.flush();
@@ -39,10 +42,7 @@ public class ClientThread extends Thread {
 
                 Server.outputs.remove(output);
                 break;
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
-
         }
 
 

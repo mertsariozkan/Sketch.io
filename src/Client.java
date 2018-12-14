@@ -1,9 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,6 +25,8 @@ public class Client {
     private String nickname;
     DatabaseOperations databaseOperations;
     HashMap<String , Integer> clients;
+    boolean isDrawer;
+    String questionWord;
     public Client(String ip, int port, String nickname) throws IOException, SQLException {
         this.nickname = nickname;
 
@@ -40,6 +39,12 @@ public class Client {
         }
 
         panel = drawingPage.canvas;
+
+        drawingPage.skipTurn.addActionListener(e -> {
+            output.println("skipmyturn");
+            output.flush();
+
+        });
 
         drawingPage.addWindowListener(new WindowAdapter() {
             @Override
@@ -60,10 +65,18 @@ public class Client {
 
         drawingPage.sendButton.addActionListener(e -> {
             if (!drawingPage.messageField.getText().isEmpty()){
-                String clientMsg ="msg" + nickname+": " + drawingPage.messageField.getText();
-                output.println(clientMsg);
-                output.flush();
-                drawingPage.messageField.setText("");
+                if(drawingPage.messageField.getText().stripTrailing().equalsIgnoreCase(questionWord)) {
+                    System.out.println("CORRECCT");
+                    output.println("msg" + nickname +" guessed the correct answer!");
+                    output.flush();
+                    drawingPage.messageField.setText("");
+                }
+                else {
+                    String clientMsg = "msg" + nickname + ": " + drawingPage.messageField.getText();
+                    output.println(clientMsg);
+                    output.flush();
+                    drawingPage.messageField.setText("");
+                }
             }
 
         });
@@ -71,21 +84,25 @@ public class Client {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                oldX = e.getX();
-                oldY = e.getY();
-                panel.getGraphics().drawLine(10, 10, 20, 20);
-                System.out.println("Clicked");
-            }
+                if(isDrawer) {
+                    oldX = e.getX();
+                    oldY = e.getY();
+                    panel.getGraphics().drawLine(10, 10, 20, 20);
+                    System.out.println("Clicked");
+                }
+                }
         });
         panel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                currentX = e.getX();
-                currentY = e.getY();
-                coordinates.add(currentX + "-" + currentY);
-                panel.getGraphics().drawLine(oldX, oldY, currentX, currentY);
-                oldX = currentX;
-                oldY = currentY;
+                if(isDrawer) {
+                    currentX = e.getX();
+                    currentY = e.getY();
+                    coordinates.add(currentX + "-" + currentY);
+                    panel.getGraphics().drawLine(oldX, oldY, currentX, currentY);
+                    oldX = currentX;
+                    oldY = currentY;
+                }
             }
         });
 
@@ -102,7 +119,7 @@ public class Client {
         TimerTask job = new TimerTask() {
             @Override
             public void run() {
-                output.println(coordinates);
+                output.println("drw" +  coordinates);
                 coordinates.clear();
             }
         };
@@ -111,8 +128,6 @@ public class Client {
         String message;
         try {
             while ((message = input.readLine()) != null) {
-
-
                 if (message.contains("msg")){
                     message = message.substring(3);
                     drawingPage.chatArea.append(message+"\n");
@@ -121,9 +136,35 @@ public class Client {
                     message = message.substring(3);
                     drawingPage.tableModel.addRow(new Object[]{message , 0});
                 }
-                else {
-                    if (!message.equals("")) {
+                else if (message.contains("drawer")){
+                    System.out.println("this client is drawer");
+                    isDrawer = true;
+                    drawingPage.questionLabel.setVisible(true);
+                    drawingPage.messageField.setFocusable(false);
+                }
+                else if(message.contains("guesser")){
+                    System.out.println("this client is guesser");
+                    isDrawer = false;
+                    drawingPage.questionLabel.setVisible(false);
+                    drawingPage.messageField.setFocusable(true);
+                    drawingPage.sendButton.setFocusable(false);
+                }
+                else if(message.contains("que")) {
+                    questionWord = message.substring(3);
+                    drawingPage.questionLabel.setText(message.substring(3));
+                    System.out.println(questionWord);
+                }
+                else if(message.contains("tmr")){
+                    if (drawingPage.timeCounter.getText().equals("0")  )  drawingPage.timeCounter.setText("10");
 
+                    drawingPage.timeCounter.setText(String.valueOf(Integer.parseInt(drawingPage.timeCounter.getText()) - 1));
+                }
+                else if(message.contains("stp")){
+                    drawingPage.timeCounter.setText("10");
+                }
+                else if(message.contains("drw")){
+
+                        message = message.substring(3);
                         message = message.replaceAll("\\s+", "");
                         message = message.substring(1, message.length() - 1);
                         String[] coordinates = message.split(",");
@@ -143,7 +184,7 @@ public class Client {
                             }
 
                         }
-                    }
+
                 }
             }
         } catch (

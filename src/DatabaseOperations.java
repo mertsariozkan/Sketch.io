@@ -2,6 +2,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class DatabaseOperations {
 
@@ -73,5 +74,27 @@ public class DatabaseOperations {
         PreparedStatement preparedStatementDelete = connection.prepareStatement(deleteQuery);
         preparedStatementDelete.setString(1 , nickName);
         preparedStatementDelete.executeUpdate();
+    }
+
+    public void addQuestion(String question) throws SQLException {
+        String insertQuestionQuery = "INSERT INTO questions(question) VALUES(?)";
+        PreparedStatement preparedStatementInsert = connection.prepareStatement(insertQuestionQuery);
+        preparedStatementInsert.setString(1 , question);
+        preparedStatementInsert.executeUpdate();
+    }
+    public String randomQuestion() throws SQLException {
+        String selectQuery = "SELECT COUNT(*) FROM questions";
+        Statement selectStatement = connection.createStatement();
+        ResultSet sizeSet = selectStatement.executeQuery(selectQuery);
+        int size = sizeSet.getInt(1);
+        int randomizedNumber =(int)(Math.random() * ((size - 1) + 1)) + 1 ;
+
+        String randomQuestionQuery = "SELECT question FROM questions WHERE id = " + randomizedNumber;
+        Statement randomStatement = connection.createStatement();
+        ResultSet randomQ = randomStatement.executeQuery(randomQuestionQuery);
+
+        return "que"+randomQ.getString("question");
+
+
     }
 }
