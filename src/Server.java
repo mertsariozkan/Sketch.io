@@ -1,10 +1,11 @@
-import javax.xml.crypto.Data;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Timer;
+import javax.swing.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -12,34 +13,15 @@ public class Server {
     static CopyOnWriteArrayList<PrintWriter> outputs;
     DatabaseOperations databaseOperations = new DatabaseOperations();
     static ArrayList<ClientThread> clientThreads = new ArrayList<>();
-    static TimerTask timerTask;
     static Timer timer;
-    static boolean skip;
+    static boolean skipButtonClicked = false;
+
     public Server(int port) throws IOException, SQLException {
 
         ServerSocket server = new ServerSocket(port);
         outputs = new CopyOnWriteArrayList<>();
         while (true) {
             Socket connectionSocket;
-            if (outputs.size() == 2){
-                while(true){
-
-                    if (skip){
-                        timer.cancel();
-
-                        Timer timer = new Timer();
-                        TimerTask timerTask1=null;
-                        try {
-                            timerTask1 = new CustomTimerTask(outputs);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                        timer.schedule(timerTask1 , 0 , 10000);
-                        skip = false;
-                    }
-                }
-            }
-
             try {
                 connectionSocket = server.accept();
 
@@ -72,22 +54,45 @@ public class Server {
                 e.printStackTrace();
             }
         }
-
-        timer = new Timer();
-        TimerTask timerTask = new CustomTimerTask(outputs);
-        timer.schedule(timerTask, 0, 10000);
-
-        Timer labelTimer = new Timer();
-        TimerTask labelTimerTask = new TimerTask() {
+        timer = new Timer(10000, new ActionListener() {
+            int i=0;
             @Override
-            public void run() {
-                for (PrintWriter wrt : outputs) {
-                    wrt.println("tmr");
+            public void actionPerformed(ActionEvent e) {
+                if(skipButtonClicked) {
+                    i++;
+                    System.out.println("SKİP BUTTON CLİCKED İS TRUE");
+                    skipButtonClicked = false;
                 }
+                if (i == outputs.size()) {
+                    i = 0;
+                }
+                outputs.get(i).println("drawer");
+                try {
+                    String randomQ = databaseOperations.randomQuestion();
+                    for (PrintWriter o : outputs) {
+                        o.println(randomQ);
+                    }
 
+
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+                for (int j = 0; j < outputs.size(); j++) {
+                    if (j != i) {
+                        outputs.get(j).println("guesser");
+                    }
+                }
+                i++;
             }
-        };
-        labelTimer.schedule(labelTimerTask, 0, 1000);
+        });
+        timer.start();
+
+        Timer labelTimer = new Timer(1000, e -> {
+            for (PrintWriter wrt : outputs) {
+                wrt.println("tmr");
+            }
+        });
+        labelTimer.start();
 
 
     }

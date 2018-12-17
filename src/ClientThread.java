@@ -25,7 +25,7 @@ public class ClientThread extends Thread {
                 String message;
                 while ((message = input.readLine()) != null) {
                     if(message.equals("skipmyturn")) {
-                        Server.skip = true;
+                        Server.skipButtonClicked = true;
                         for (PrintWriter o : Server.outputs){
                             o.println("stp");
                         }

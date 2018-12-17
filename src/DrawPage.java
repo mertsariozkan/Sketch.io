@@ -50,7 +50,7 @@ public class DrawPage extends CustomFrame{
         JTable clientTable = new JTable(tableModel);
 
         // Creating 'TIME_COUNTER'.
-        timeCounter = new JLabel("3");
+        timeCounter = new JLabel("10");
         timeCounter.setFont(new Font("Comic Sans MS" , Font.PLAIN , pageWidth/24));
         timeCounter.setBounds(pageWidth/28 , pageHeight*27/32 , pageWidth/7 , pageHeight/16);
 
