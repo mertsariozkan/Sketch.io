@@ -42,7 +42,13 @@ public class ClientThread extends Thread {
 
                     } else if (message.contains("usr")) {
                         createUserList(message);
-                    } else if (message.contains("scs")) {
+                    }
+
+                    else if (message.contains("scs")) {
+                        //for (PrintWriter p : Server.outputs){
+                          //  p.println("pnt");
+                            //p.flush();
+                        //}
                         Server.correctAnswerCounter++;
                         if (Server.correctAnswerCounter == Server.outputs.size() - 1) {
                             Server.correctAnswerCounter = 0;
@@ -50,6 +56,13 @@ public class ClientThread extends Thread {
                             for (PrintWriter o : Server.outputs) {
                                 o.println(randomQ);
                             }
+                        }
+                    }
+                    else if(message.contains("scc")) {
+                        createUserList(message);
+                        for (PrintWriter p : Server.outputs){
+                            p.println(Server.userList);
+                            p.flush();
                         }
                     }
 
@@ -81,7 +94,9 @@ public class ClientThread extends Thread {
         else if(message.contains("skipword")) {
              tempMessage = message.substring(8);
         }
-
+        else if(message.contains("scc")) {
+            tempMessage = message.substring(3);
+        }
         char[] messageContent = tempMessage.toCharArray();
         boolean regexFlag = false;
         nickname = "";

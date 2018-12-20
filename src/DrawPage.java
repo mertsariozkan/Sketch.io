@@ -14,7 +14,7 @@ public class DrawPage extends CustomFrame{
     JButton skipTurn;
     public DrawPage(String pageTitle) {
         super(pageTitle);
-
+        getRootPane().setDefaultButton(sendButton);
         int pageHeight = getHeight();
         int pageWidth = getWidth();
         setResizable(true);
@@ -43,6 +43,7 @@ public class DrawPage extends CustomFrame{
 
         // Creating 'MESSAGE_AREA'.
         messageField = new JTextArea();
+
 
 
         String[] columnNames = {"Player Name" , "Score" , "Turn" };

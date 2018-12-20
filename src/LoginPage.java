@@ -23,6 +23,7 @@ public class LoginPage extends CustomFrame {
 
         // Creating login button.
         JButton loginButton = new JButton("Login");
+        getRootPane().setDefaultButton(loginButton);
         loginButton.setBounds(pageWidth*7/16 , pageHeight*19/32 , pageWidth/8 , pageHeight/16);
         loginButton.addActionListener(e -> {
             String username = nicknameText.getText();

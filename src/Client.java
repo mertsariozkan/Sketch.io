@@ -9,13 +9,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.Timer;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Client {
+public class Client implements ActionListener {
     private Socket socket;
     private BufferedReader input;
     private PrintWriter output;
@@ -26,7 +24,7 @@ public class Client {
     private DrawPage drawingPage;
     private String nickname;
     DatabaseOperations databaseOperations;
-    HashMap<String, Integer> clients;
+    TreeMap<String, Integer> clients;
     boolean isDrawer;
     String questionWord;
 
@@ -38,16 +36,16 @@ public class Client {
 
     public Client(String ip, int port, String nickname) throws IOException, SQLException {
         this.nickname = nickname;
-        this.score = 102;
+        this.score = 0;
         coordinates = new CopyOnWriteArrayList<>();
         drawingPage = new DrawPage("SKETCH.IO");
         databaseOperations = new DatabaseOperations();
-        clients = new HashMap<>();
+        clients = new TreeMap<>();
 
         panel = drawingPage.canvas;
 
         drawingPage.skipTurn.addActionListener(e -> {
-            score--;
+            score -= 2;
             output.println("skipword" + nickname + "/" + Integer.toString(score));
             output.flush();
 
@@ -70,22 +68,7 @@ public class Client {
             }
         });
 
-        drawingPage.sendButton.addActionListener(e -> {
-            if (!drawingPage.messageField.getText().isEmpty()) {
-                if (drawingPage.messageField.getText().stripTrailing().equalsIgnoreCase(questionWord)) {
-                    System.out.println("CORRECCT");
-                    output.println("scs" + nickname + " guessed the correct answer!");
-                    output.flush();
-                    drawingPage.messageField.setText("");
-                } else {
-                    String clientMsg = "msg" + nickname + ": " + drawingPage.messageField.getText();
-                    output.println(clientMsg);
-                    output.flush();
-                    drawingPage.messageField.setText("");
-                }
-            }
-
-        });
+        drawingPage.sendButton.addActionListener(this);
 
         panel.addMouseListener(new MouseAdapter() {
             @Override
@@ -152,23 +135,27 @@ public class Client {
                         String[] singleUser = user.split("=");
                         System.out.println(singleUser[0] + "   " + singleUser[1]);
                         clients.put(singleUser[0], Integer.valueOf(singleUser[1]));
+
                     }
                     for (int i = drawingPage.tableModel.getRowCount() - 1; i > -1; i--) {
                         drawingPage.tableModel.removeRow(i);
                     }
                     System.out.println(drawingPage.tableModel.getRowCount());
-                    if (drawingPage.tableModel.getRowCount() < 2){
-                        for (String client : clients.keySet()) {
-                            System.out.println(client);
-                            drawingPage.tableModel.addRow(new Object[]{client, clients.get(client)});
+                    Map sortedMap = sortByValues(clients);
+                    Set set = sortedMap.entrySet();
+                    Iterator i = set.iterator();
+
+                        while (i.hasNext()) {
+                            Map.Entry me = (Map.Entry) i.next();
+                            drawingPage.tableModel.addRow(new Object[]{me.getKey(), me.getValue() });
                         }
-                    }
-
-
                 }
-                // else if (message.contains("usr")){
-                //   message = message.substring(3);
-                // drawingPage.tableModel.addRow(new Object[]{message , 0});
+
+              //  else if (message.contains("pnt")){
+                //    if (isDrawer){
+                  //      System.out.println("2 pnt increase @@@@@@@@@@@@@@@@@@@@@@@@@@");
+                    //    score+=2;
+                    //}
                 //}
                 else if (message.contains("drawer")) {
                     System.out.println("this client is drawer");
@@ -218,8 +205,7 @@ public class Client {
                     }
                 }
             }
-        } catch (
-                IOException e1) {
+        } catch (IOException e1) {
             e1.printStackTrace();
         } finally {
             System.out.println("in finally of client");
@@ -236,5 +222,44 @@ public class Client {
         panel.updateUI();
     }
 
+    public static <K, V extends Comparable<V>> Map<K, V>
+    sortByValues(final Map<K, V> map) {
+        Comparator<K> valueComparator =
+                (k2, k1) -> {
+                    int compare =
+                            map.get(k1).compareTo(map.get(k2));
+                    if (compare == 0)
+                        return 1;
+                    else
+                        return compare;
+                };
 
+        Map<K, V> sortedByValues =
+                new TreeMap<>(valueComparator);
+        sortedByValues.putAll(map);
+        return sortedByValues;
+    }
+
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == drawingPage.sendButton){
+            if (!drawingPage.messageField.getText().isEmpty()) {
+                if (drawingPage.messageField.getText().stripTrailing().equalsIgnoreCase(questionWord)) {
+                    System.out.println("CORRECCT");
+                    output.println("scs" + nickname + " guessed the correct answer!");
+                    output.flush();
+                    score += 5;
+                    output.println("scc" + nickname + "/" + Integer.toString(score));
+                    output.flush();
+                    drawingPage.messageField.setText("");
+                } else {
+                    String clientMsg = "msg" + nickname + ": " + drawingPage.messageField.getText();
+                    output.println(clientMsg);
+                    output.flush();
+                    drawingPage.messageField.setText("");
+                }
+            }
+        }
+    }
 }
