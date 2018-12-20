@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class DrawPage extends CustomFrame{
@@ -7,9 +8,13 @@ public class DrawPage extends CustomFrame{
     JTextArea chatArea;
     JButton sendButton;
     JTextArea messageField;
+    DefaultTableModel tableModel ;
+    JLabel timeCounter;
+    JLabel questionLabel;
+    JButton skipTurn;
     public DrawPage(String pageTitle) {
         super(pageTitle);
-
+        getRootPane().setDefaultButton(sendButton);
         int pageHeight = getHeight();
         int pageWidth = getWidth();
         setResizable(true);
@@ -40,9 +45,16 @@ public class DrawPage extends CustomFrame{
         messageField = new JTextArea();
 
 
+
         String[] columnNames = {"Player Name" , "Score" , "Turn" };
-        String[][] clients = {{"Mert","102","<-" }, {"Kubilay","99",""}};
-        JTable clientTable = new JTable(clients , columnNames);
+        tableModel = new DefaultTableModel(columnNames , 0);
+        JTable clientTable = new JTable(tableModel);
+
+        // Creating 'TIME_COUNTER'.
+        timeCounter = new JLabel("10");
+        timeCounter.setFont(new Font("Comic Sans MS" , Font.PLAIN , pageWidth/24));
+        timeCounter.setBounds(pageWidth/28 , pageHeight*27/32 , pageWidth/7 , pageHeight/16);
+
 
         // Creatin 'PANEL_TABLE'.
         JPanel tableHolder = new JPanel();
@@ -53,11 +65,19 @@ public class DrawPage extends CustomFrame{
 
 
         // Creating 'SKIP_TURN_BUTTON'.
-        JButton skipTurn = new JButton("Skip Turn !");
-        skipTurn.setBounds(pageWidth*3/16, pageHeight*27/32 , pageWidth*2/7 , pageHeight/16);
+        skipTurn = new JButton("PASS !");
+        skipTurn.setBounds(pageWidth*16/31, pageHeight*27/32 , pageWidth*1/7 , pageHeight/16);
         messageAreaPanel.add(sendButton , BorderLayout.EAST);
         messageAreaPanel.add(messageField, BorderLayout.CENTER);
 
+
+        // Creating 'QUESTION LABEL'.
+        questionLabel = new JLabel("");
+        questionLabel.setFont(new Font("Comic Sans MS" , Font.PLAIN , pageWidth/36));
+        questionLabel.setBounds(pageWidth*3/16,pageHeight*27/32 , pageWidth*2/7, pageHeight/16);
+
+        add(questionLabel);
+        add(timeCounter);
         add(tableHolder);
         add(skipTurn);
         add(innerTitle);

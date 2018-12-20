@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.sql.SQLException;
 
 public class LoginPage extends CustomFrame {
     public LoginPage(String pageTitle) {
@@ -21,7 +23,23 @@ public class LoginPage extends CustomFrame {
 
         // Creating login button.
         JButton loginButton = new JButton("Login");
+        getRootPane().setDefaultButton(loginButton);
         loginButton.setBounds(pageWidth*7/16 , pageHeight*19/32 , pageWidth/8 , pageHeight/16);
+        loginButton.addActionListener(e -> {
+            String username = nicknameText.getText();
+                Thread thread = new Thread(() -> {
+                    try {
+                        new Client("localhost", 3000, username);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    } catch (SQLException e1) {
+                        e1.printStackTrace();
+                    }
+                });
+
+            setVisible(false);
+            thread.start();
+        });
 
         add(nicknameText);
         add(mainTitle);
