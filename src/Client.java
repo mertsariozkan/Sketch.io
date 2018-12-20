@@ -119,6 +119,11 @@ public class Client implements ActionListener {
                     drawingPage.chatArea.append(message + "\n");
                 } else if (message.contains("scs")) {
                     message = message.substring(3);
+                    if(isDrawer) {
+                        score+=2;
+                        output.println("scc" + nickname + "/" + Integer.toString(score));
+                        output.flush();
+                    }
                     drawingPage.chatArea.append(message + "\n");
                 } else if (message.contains("GAME")) {
                     output.println("usr" + nickname + "/" + Integer.toString(score));
@@ -145,17 +150,17 @@ public class Client implements ActionListener {
                     Set set = sortedMap.entrySet();
                     Iterator i = set.iterator();
 
-                        while (i.hasNext()) {
-                            Map.Entry me = (Map.Entry) i.next();
-                            drawingPage.tableModel.addRow(new Object[]{me.getKey(), me.getValue() });
-                        }
+                    while (i.hasNext()) {
+                        Map.Entry me = (Map.Entry) i.next();
+                        drawingPage.tableModel.addRow(new Object[]{me.getKey(), me.getValue()});
+                    }
                 }
 
-              //  else if (message.contains("pnt")){
+                //  else if (message.contains("pnt")){
                 //    if (isDrawer){
-                  //      System.out.println("2 pnt increase @@@@@@@@@@@@@@@@@@@@@@@@@@");
-                    //    score+=2;
-                    //}
+                //      System.out.println("2 pnt increase @@@@@@@@@@@@@@@@@@@@@@@@@@");
+                //    score+=2;
+                //}
                 //}
                 else if (message.contains("drawer")) {
                     System.out.println("this client is drawer");
@@ -243,7 +248,7 @@ public class Client implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == drawingPage.sendButton){
+        if (e.getSource() == drawingPage.sendButton) {
             if (!drawingPage.messageField.getText().isEmpty()) {
                 if (drawingPage.messageField.getText().stripTrailing().equalsIgnoreCase(questionWord)) {
                     System.out.println("CORRECCT");
