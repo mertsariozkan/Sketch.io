@@ -7,23 +7,29 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.swing.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Server {
     static CopyOnWriteArrayList<PrintWriter> outputs;
-    DatabaseOperations databaseOperations = new DatabaseOperations();
+    static DatabaseOperations databaseOperations;
+    static int correctAnswerCounter = 0;
+
     static ArrayList<ClientThread> clientThreads = new ArrayList<>();
     static Timer timer;
     static boolean skipButtonClicked = false;
+    static TreeMap<String, Integer> userList;
 
     public Server(int port) throws IOException, SQLException {
-
+        databaseOperations = new DatabaseOperations();
         ServerSocket server = new ServerSocket(port);
         outputs = new CopyOnWriteArrayList<>();
+        userList = new TreeMap<>();
         while (true) {
             Socket connectionSocket;
             try {
                 connectionSocket = server.accept();
+
 
                 BufferedReader input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 PrintWriter output = new PrintWriter(connectionSocket.getOutputStream());
@@ -41,11 +47,16 @@ public class Server {
                 Thread clientThread = new ClientThread(connectionSocket, input, output);
                 clientThreads.add((ClientThread) clientThread);
                 if (outputs.size() == 2) {
+
                     for (ClientThread thr : clientThreads) {
                         thr.start();
                         System.out.println("thread started");
+
                     }
-                    System.out.println("!!!!!!!!!!!!!!");
+                    for (PrintWriter p : outputs) {
+                        p.println("GAME");
+                        p.flush();
+                    }
                     break;
                 }
 
@@ -55,15 +66,15 @@ public class Server {
             }
         }
         timer = new Timer(10000, new ActionListener() {
-            int i=0;
+            int i = 0;
+
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(skipButtonClicked) {
-                    i++;
-                    System.out.println("SKİP BUTTON CLİCKED İS TRUE");
-                    skipButtonClicked = false;
+                for (PrintWriter o : outputs) {
+                    o.println(userList);
+                    o.flush();
                 }
-                if (i == outputs.size()) {
+                if (i >= outputs.size()) {
                     i = 0;
                 }
                 outputs.get(i).println("drawer");
@@ -85,7 +96,9 @@ public class Server {
                 i++;
             }
         });
+        timer.setInitialDelay(0);
         timer.start();
+
 
         Timer labelTimer = new Timer(1000, e -> {
             for (PrintWriter wrt : outputs) {
@@ -96,6 +109,7 @@ public class Server {
 
 
     }
+
 
     public static void main(String[] args) throws IOException, SQLException {
         new Server(3000);

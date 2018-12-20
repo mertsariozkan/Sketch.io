@@ -64,7 +64,7 @@ public class DrawPage extends CustomFrame{
 
 
         // Creating 'SKIP_TURN_BUTTON'.
-        skipTurn = new JButton("Skip Turn !");
+        skipTurn = new JButton("PASS !");
         skipTurn.setBounds(pageWidth*16/31, pageHeight*27/32 , pageWidth*1/7 , pageHeight/16);
         messageAreaPanel.add(sendButton , BorderLayout.EAST);
         messageAreaPanel.add(messageField, BorderLayout.CENTER);
