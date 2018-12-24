@@ -13,88 +13,103 @@ public class ClientThread extends Thread {
     DatabaseOperations databaseOperations;
     String score;
     String nickname;
+    int roomId;
+    boolean loop = true;
 
-    public ClientThread(Socket socket, BufferedReader input, PrintWriter output) throws SQLException {
+    public ClientThread(Socket socket, BufferedReader input, PrintWriter output, int roomId) throws SQLException {
         this.socket = socket;
         this.input = input;
         this.output = output;
+        this.roomId = roomId;
         databaseOperations = new DatabaseOperations();
     }
 
     @Override
     public void run() {
-
-        while (true) {
-            try {
-                String message;
-                while ((message = input.readLine()) != null) {
-                    if (message.contains("skipword")) {
-                        createUserList(message);
-                        String randomQ = databaseOperations.randomQuestion();
-                        for (PrintWriter o : Server.outputs) {
-                            o.println(randomQ);
-                            o.flush();
-                        }
-                        for (PrintWriter o : Server.outputs) {
-                            o.println(Server.userList);
-                            o.flush();
-                        }
-
-                    } else if (message.contains("usr")) {
-                        createUserList(message);
-                    }
-
-                    else if (message.contains("scs")) {
-                        //for (PrintWriter p : Server.outputs){
-                          //  p.println("pnt");
-                            //p.flush();
-                        //}
-                        Server.correctAnswerCounter++;
-                        if (Server.correctAnswerCounter == Server.outputs.size() - 1) {
-                            Server.correctAnswerCounter = 0;
+        try {
+        while (loop) {
+            String message;
+                while (loop && (message = input.readLine()) != null) {
+                        if (message.contains("skipword")) {
+                            createUserList(message);
                             String randomQ = databaseOperations.randomQuestion();
-                            for (PrintWriter o : Server.outputs) {
+                            for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
                                 o.println(randomQ);
+                                o.flush();
                             }
-                        }
-                    }
-                    else if(message.contains("scc")) {
-                        createUserList(message);
-                        for (PrintWriter p : Server.outputs){
-                            p.println(Server.userList);
-                            p.flush();
-                        }
-                    }
+                            for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
+                                o.println(Server.userLists.get(roomId));
+                                o.flush();
+                            }
 
-                    for (PrintWriter o : Server.outputs) {
-                        o.println(message);
-                        o.flush();
-                    }
+                        } else if (message.contains("usr")) {
+                            createUserList(message);
+                        } else if (message.contains("scs")) {
+                            Server.correctAnswerCounter++;
+                            if (Server.correctAnswerCounter == Server.rooms.get(roomId).getClientOutputs().size() - 1) {
+                                Server.correctAnswerCounter = 0;
+                                String randomQ = databaseOperations.randomQuestion();
+                                for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
+                                    o.println(randomQ);
+                                }
+                            }
+                        } else if (message.contains("scc")) {
+                            createUserList(message);
+                            for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()) {
+                                p.println(Server.userLists.get(roomId));
+                                p.flush();
+                            }
+                        } else if (message.contains("ovr")) {
+                            for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()) {
+                                p.println(message);
+                                System.out.println("Over message");
+                                p.flush();
+                            }
+                        } else if (message.contains("ovx")) {
+                            createUserList(message);
+                            for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()) {
+                                p.println(Server.userLists.get(roomId));
+                                p.flush();
+                            }
+                        } else if(message.equals("cls")) {
+                            for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()) {
+                                p.println(message);
+                                p.flush();
+                            }
+                            System.out.println("cls geldi");
+                            loop = false;
+                        }
 
+                        for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
+                            o.println(message);
+                            o.flush();
+                        }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("A client disconnected.");
-                Server.userList.remove(nickname);
-                Server.outputs.remove(output);
-                break;
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            Server.rooms.set(roomId, new Room(roomId));
+            Server.userLists.set(roomId, null);
+            Server.statusOfRoomAvailability.set(roomId,true);
         }
+
 
 
     }
 
+
     public void createUserList(String message) {
         String tempMessage = null;
-        if(message.contains("usr")) {
-             tempMessage = message.substring(3);
-        }
-        else if(message.contains("skipword")) {
-             tempMessage = message.substring(8);
-        }
-        else if(message.contains("scc")) {
+        if (message.contains("usr")) {
+            tempMessage = message.substring(3);
+        } else if (message.contains("skipword")) {
+            tempMessage = message.substring(8);
+        } else if (message.contains("ovx")) {
+            tempMessage = message.substring(3);
+        } else if (message.contains("scc")) {
             tempMessage = message.substring(3);
         }
         char[] messageContent = tempMessage.toCharArray();
@@ -113,6 +128,6 @@ public class ClientThread extends Thread {
             }
 
         }
-        Server.userList.put(nickname, Integer.valueOf(score));
+        Server.userLists.get(roomId).put(nickname, Integer.valueOf(score));
     }
 }
