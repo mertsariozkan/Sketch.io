@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -64,8 +65,6 @@ public class Client implements ActionListener {
                 if (isDrawer) {
                     oldX = e.getX();
                     oldY = e.getY();
-                    //panel.getGraphics().drawLine(10, 10, 20, 20);
-                    System.out.println("Clicked");
                 }
             }
         });
@@ -75,7 +74,7 @@ public class Client implements ActionListener {
                 if (isDrawer) {
                     currentX = e.getX();
                     currentY = e.getY();
-                    coordinates.add(currentX + "-" + currentY);
+                    coordinates.add(oldX + "-" + oldY + "-" +currentX + "-" + currentY);
                     panel.getGraphics().drawLine(oldX, oldY, currentX, currentY);
                     oldX = currentX;
                     oldY = currentY;
@@ -99,7 +98,7 @@ public class Client implements ActionListener {
                 coordinates.clear();
             }
         };
-        timer.schedule(job, 0, 50);
+        timer.schedule(job, 0, 10);
 
         String message;
         try {
@@ -185,15 +184,12 @@ public class Client implements ActionListener {
                         for (String c : coordinates) {
                             if (!c.equals("")) {
                                 String xy[] = c.split("-");
-                                if (!xy[0].equals("") && !xy[1].equals("")) {
-                                    currentX = Integer.parseInt(xy[0]);
-                                    currentY = Integer.parseInt(xy[1]);
-
-                                    oldX = currentX;
-                                    oldY = currentY;
-
+                                if (!xy[2].equals("") && !xy[3].equals("")) {
+                                    oldX = Integer.parseInt(xy[0]);
+                                    oldY = Integer.parseInt(xy[1]);
+                                    currentX = Integer.parseInt(xy[2]);
+                                    currentY = Integer.parseInt(xy[3]);
                                     panel.getGraphics().drawLine(oldX, oldY, currentX, currentY);
-
                                 }
                             }
 
