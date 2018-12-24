@@ -1,11 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.sql.SQLException;
 
 public class LoginPage extends CustomFrame {
-    public LoginPage(String pageTitle) {
-        super(pageTitle);
+    public LoginPage() {
+        super();
 
         int pageWidth = getWidth();
         int pageHeight = getHeight();
