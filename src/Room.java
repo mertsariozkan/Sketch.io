@@ -7,7 +7,6 @@ public class Room {
     private int id;
     private CopyOnWriteArrayList<PrintWriter> clientOutputs;
     private CopyOnWriteArrayList<BufferedReader> clientInputs;
-    private TreeMap<String, Integer> userList;
 
     public Room(int id){
         setId(id);
@@ -15,30 +14,16 @@ public class Room {
         clientInputs = new CopyOnWriteArrayList<>();
     }
 
-
     public int getId() {
         return id;
     }
-
     public void setId(int id) {
         this.id = id;
     }
-
-
     public CopyOnWriteArrayList<PrintWriter> getClientOutputs() {
         return clientOutputs;
     }
-
-    public void setClientOutputs(CopyOnWriteArrayList<PrintWriter> clientOutputs) {
-        this.clientOutputs = clientOutputs;
-    }
-
-
     public CopyOnWriteArrayList<BufferedReader> getClientInputs() {
         return clientInputs;
-    }
-
-    public void setClientInputs(CopyOnWriteArrayList<BufferedReader> clientInputs) {
-        this.clientInputs = clientInputs;
     }
 }

@@ -1,8 +1,4 @@
-import jdk.swing.interop.SwingInterOpUtils;
-import org.w3c.dom.Text;
-
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -54,18 +50,9 @@ public class Client implements ActionListener {
 
         drawingPage.addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosed(WindowEvent e) {
-                try {
-
-                    databaseOperations.deleteClient(nickname);
-                    input.close();
-                    output.close();
-                    socket.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
-                }
+            public void windowClosing(WindowEvent e) {
+                output.println("cls");
+                output.flush();
             }
         });
 
@@ -127,8 +114,8 @@ public class Client implements ActionListener {
                     drawingPage.chatArea.append(message + "\n");
                 } else if (message.contains("scs")) {
                     message = message.substring(3);
-                    if(isDrawer) {
-                        score+=2;
+                    if (isDrawer) {
+                        score += 2;
                         output.println("scc" + nickname + "/" + Integer.toString(score));
                         output.flush();
                     }
@@ -219,6 +206,11 @@ public class Client implements ActionListener {
                     output.println("ovx" + nickname + "/" + Integer.toString(score));
                     drawingPage.chatArea.setText("Game over. Winner is: " + message +"\n");
 
+                }
+                else if(message.equals("cls")) {
+                    drawingPage.setVisible(false);
+                    new RoomPage(nickname);
+                    break;
                 }
             }
         } catch (IOException e1) {
