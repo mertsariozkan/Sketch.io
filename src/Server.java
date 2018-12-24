@@ -1,113 +1,66 @@
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.*;
+import com.sun.source.tree.Tree;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import javax.swing.Timer;
-import java.util.TimerTask;
 import java.util.TreeMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Server {
-    static CopyOnWriteArrayList<PrintWriter> outputs;
-    static DatabaseOperations databaseOperations;
-    static int correctAnswerCounter = 0;
 
-    static ArrayList<ClientThread> clientThreads = new ArrayList<>();
-    static Timer timer;
-    static boolean skipButtonClicked = false;
-    static TreeMap<String, Integer> userList;
+    static int correctAnswerCounter = 0;
+    static ArrayList<Room> rooms;
+    static ArrayList<TreeMap> userLists;
+    ArrayList<Boolean> statusOfRoomAvailability;
+    BufferedReader input = null;
+    PrintWriter output = null;
+    Socket connectionSocket=null;
 
     public Server(int port) throws IOException, SQLException {
-        databaseOperations = new DatabaseOperations();
+        rooms = new ArrayList<>();
+        userLists = new ArrayList<>();
+        statusOfRoomAvailability = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            rooms.add(new Room(i));
+            userLists.add(null);
+            statusOfRoomAvailability.add(true);
+        }
         ServerSocket server = new ServerSocket(port);
-        outputs = new CopyOnWriteArrayList<>();
-        userList = new TreeMap<>();
+        try {
         while (true) {
-            Socket connectionSocket;
-            try {
                 connectionSocket = server.accept();
 
-
-                BufferedReader input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-                PrintWriter output = new PrintWriter(connectionSocket.getOutputStream());
-                outputs.add(output);
+                input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+                output = new PrintWriter(connectionSocket.getOutputStream());
+                String id = input.readLine();
+                while(!id.contains("rid"));
+                id = id.substring(3);
+                rooms.get(Integer.parseInt(id)).getClientOutputs().add(output);
+                rooms.get(Integer.parseInt(id)).getClientInputs().add(input);
+                System.out.println(rooms.get(Integer.parseInt(id)).getClientOutputs());
+                System.out.println(id);
                 System.out.println("added output streams to copyonwritelist");
-                if (outputs.size() == 2) {
-                    for (int i = 0; i < outputs.size(); i++) {
-                        if (i == 0) {
-                            System.out.println("sent drawer message");
-                            outputs.get(i).println("drawer");
-                        } else outputs.get(i).println("guesser");
+                for (int i=0;i<rooms.size();i++) {
+                    if (rooms.get(i).getClientOutputs().size() >= 2 && statusOfRoomAvailability.get(i)) {
+                        new ServerThread(rooms.get(i), connectionSocket, input, output).start();
+                        statusOfRoomAvailability.set(i,false);
                     }
                 }
                 System.out.println("Before thread arrayList addition");
-                Thread clientThread = new ClientThread(connectionSocket, input, output);
-                clientThreads.add((ClientThread) clientThread);
-                if (outputs.size() == 2) {
-
-                    for (ClientThread thr : clientThreads) {
-                        thr.start();
-                        System.out.println("thread started");
-
-                    }
-                    for (PrintWriter p : outputs) {
-                        p.println("GAME");
-                        p.flush();
-                    }
-                    break;
-                }
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
-        timer = new Timer(10000, new ActionListener() {
-            int i = 0;
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                for (PrintWriter o : outputs) {
-                    o.println(userList);
-                    o.flush();
-                }
-                if (i >= outputs.size()) {
-                    i = 0;
-                }
-                outputs.get(i).println("drawer");
-                try {
-                    String randomQ = databaseOperations.randomQuestion();
-                    for (PrintWriter o : outputs) {
-                        o.println(randomQ);
-                    }
-
-
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-                for (int j = 0; j < outputs.size(); j++) {
-                    if (j != i) {
-                        outputs.get(j).println("guesser");
-                    }
-                }
-                i++;
-            }
-        });
-        timer.setInitialDelay(0);
-        timer.start();
-
-
-        Timer labelTimer = new Timer(1000, e -> {
-            for (PrintWriter wrt : outputs) {
-                wrt.println("tmr");
-            }
-        });
-        labelTimer.start();
-
-
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        finally {
+            connectionSocket.close();
+            input.close();
+            output.close();
+        }
     }
 
 
