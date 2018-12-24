@@ -7,36 +7,39 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 public class ClientThread extends Thread {
-    private Socket socket;
-    private BufferedReader input;
-    private PrintWriter output;
-    DatabaseOperations databaseOperations;
-    String score;
-    String nickname;
+        private Socket socket;
+        private BufferedReader input;
+        private PrintWriter output;
+        DatabaseOperations databaseOperations;
+        String score;
+        String nickname;
+        int roomId;
+        boolean loop = true;
 
-    public ClientThread(Socket socket, BufferedReader input, PrintWriter output) throws SQLException {
+    public ClientThread(Socket socket, BufferedReader input, PrintWriter output, int roomId) throws SQLException {
         this.socket = socket;
         this.input = input;
         this.output = output;
+        this.roomId = roomId;
         databaseOperations = new DatabaseOperations();
     }
 
     @Override
     public void run() {
 
-        while (true) {
+        while (loop) {
             try {
                 String message;
-                while ((message = input.readLine()) != null) {
+                while (loop && (message = input.readLine()) != null) {
                     if (message.contains("skipword")) {
                         createUserList(message);
                         String randomQ = databaseOperations.randomQuestion();
-                        for (PrintWriter o : Server.outputs) {
+                        for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
                             o.println(randomQ);
                             o.flush();
                         }
-                        for (PrintWriter o : Server.outputs) {
-                            o.println(Server.userList);
+                        for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
+                            o.println(Server.userLists.get(roomId));
                             o.flush();
                         }
 
@@ -45,28 +48,38 @@ public class ClientThread extends Thread {
                     }
 
                     else if (message.contains("scs")) {
-                        //for (PrintWriter p : Server.outputs){
-                          //  p.println("pnt");
-                            //p.flush();
-                        //}
                         Server.correctAnswerCounter++;
-                        if (Server.correctAnswerCounter == Server.outputs.size() - 1) {
+                        if (Server.correctAnswerCounter == Server.rooms.get(roomId).getClientOutputs().size() - 1) {
                             Server.correctAnswerCounter = 0;
                             String randomQ = databaseOperations.randomQuestion();
-                            for (PrintWriter o : Server.outputs) {
+                            for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
                                 o.println(randomQ);
                             }
                         }
                     }
                     else if(message.contains("scc")) {
                         createUserList(message);
-                        for (PrintWriter p : Server.outputs){
-                            p.println(Server.userList);
+                        for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()){
+                            p.println(Server.userLists.get(roomId));
+                            p.flush();
+                        }
+                    }
+                    else if(message.contains("ovr")) {
+                        for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()){
+                            p.println(message);
+                            System.out.println("Over message");
+                            p.flush();
+                        }
+                    }
+                    else if(message.contains("ovx")) {
+                        createUserList(message);
+                        for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()){
+                            p.println(Server.userLists.get(roomId));
                             p.flush();
                         }
                     }
 
-                    for (PrintWriter o : Server.outputs) {
+                    for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
                         o.println(message);
                         o.flush();
                     }
@@ -74,17 +87,27 @@ public class ClientThread extends Thread {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("A client disconnected.");
-                Server.userList.remove(nickname);
-                Server.outputs.remove(output);
                 break;
             } catch (SQLException e) {
                 e.printStackTrace();
+            }
+            finally {
+                try {
+                    input.close();
+                    output.close();
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
             }
         }
 
 
     }
+
+
 
     public void createUserList(String message) {
         String tempMessage = null;
@@ -93,6 +116,9 @@ public class ClientThread extends Thread {
         }
         else if(message.contains("skipword")) {
              tempMessage = message.substring(8);
+        }
+        else if(message.contains("ovx")) {
+            tempMessage = message.substring(3);
         }
         else if(message.contains("scc")) {
             tempMessage = message.substring(3);
@@ -113,6 +139,6 @@ public class ClientThread extends Thread {
             }
 
         }
-        Server.userList.put(nickname, Integer.valueOf(score));
+        Server.userLists.get(roomId).put(nickname,Integer.valueOf(score));
     }
 }

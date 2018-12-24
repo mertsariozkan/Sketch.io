@@ -1,4 +1,5 @@
 import jdk.swing.interop.SwingInterOpUtils;
+import org.w3c.dom.Text;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,7 +35,7 @@ public class Client implements ActionListener {
 
     private int score;
 
-    public Client(String ip, int port, String nickname) throws IOException, SQLException {
+    public Client(String ip, int port, String nickname, int id) throws IOException, SQLException {
         this.nickname = nickname;
         this.score = 0;
         coordinates = new CopyOnWriteArrayList<>();
@@ -100,6 +101,8 @@ public class Client implements ActionListener {
         input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         output = new PrintWriter(socket.getOutputStream(), true);
 
+        output.println("rid"+id);
+        output.flush();
 
         timer = new Timer();
         TimerTask job = new TimerTask() {
@@ -114,6 +117,11 @@ public class Client implements ActionListener {
         String message;
         try {
             while ((message = input.readLine()) != null) {
+                if(score>=5) {
+                    score = 0;
+                    output.println("ovr"+nickname);
+                    output.flush();
+                }
                 if (message.contains("msg")) {
                     message = message.substring(3);
                     drawingPage.chatArea.append(message + "\n");
@@ -138,14 +146,15 @@ public class Client implements ActionListener {
                         user = user.stripLeading();
                         System.out.println(user);
                         String[] singleUser = user.split("=");
-                        System.out.println(singleUser[0] + "   " + singleUser[1]);
-                        clients.put(singleUser[0], Integer.valueOf(singleUser[1]));
-
+                        if(singleUser.length>=2) {
+                            System.out.println(singleUser[0] + "   " + singleUser[1]);
+                            clients.put(singleUser[0], Integer.valueOf(singleUser[1]));
+                        }
                     }
                     for (int i = drawingPage.tableModel.getRowCount() - 1; i > -1; i--) {
                         drawingPage.tableModel.removeRow(i);
                     }
-                    System.out.println(drawingPage.tableModel.getRowCount());
+                    //System.out.println(drawingPage.tableModel.getRowCount());
                     Map sortedMap = sortByValues(clients);
                     Set set = sortedMap.entrySet();
                     Iterator i = set.iterator();
@@ -156,12 +165,6 @@ public class Client implements ActionListener {
                     }
                 }
 
-                //  else if (message.contains("pnt")){
-                //    if (isDrawer){
-                //      System.out.println("2 pnt increase @@@@@@@@@@@@@@@@@@@@@@@@@@");
-                //    score+=2;
-                //}
-                //}
                 else if (message.contains("drawer")) {
                     System.out.println("this client is drawer");
                     clearCanvas();
@@ -169,6 +172,7 @@ public class Client implements ActionListener {
                     drawingPage.questionLabel.setVisible(true);
                     drawingPage.messageField.setFocusable(false);
                 } else if (message.contains("guesser")) {
+                    drawingPage.skipTurn.setFocusable(false);
                     System.out.println("this client is guesser");
                     clearCanvas();
                     isDrawer = false;
@@ -209,16 +213,17 @@ public class Client implements ActionListener {
                         }
                     }
                 }
+                else if(message.contains("ovr")) {
+                    message = message.substring(3);
+                    score=0;
+                    output.println("ovx" + nickname + "/" + Integer.toString(score));
+                    drawingPage.chatArea.setText("Game over. Winner is: " + message +"\n");
+
+                }
             }
         } catch (IOException e1) {
             e1.printStackTrace();
-        } finally {
-            System.out.println("in finally of client");
-            input.close();
-            output.close();
-            socket.close();
         }
-
 
     }
 
