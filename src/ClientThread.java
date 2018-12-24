@@ -78,26 +78,21 @@ public class ClientThread extends Thread {
                             }
                             System.out.println("cls geldi");
                             loop = false;
-                        }
-
-                        for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
-                            o.println(message);
-                            o.flush();
+                        } else {
+                            for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
+                                o.println(message);
+                                o.flush();
+                            }
                         }
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
+        } catch (IOException | SQLException e) {
             e.printStackTrace();
         } finally {
             Server.rooms.set(roomId, new Room(roomId));
             Server.userLists.set(roomId, null);
             Server.statusOfRoomAvailability.set(roomId,true);
         }
-
-
-
     }
 
 

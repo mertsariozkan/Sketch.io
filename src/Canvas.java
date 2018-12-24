@@ -6,7 +6,7 @@ public class Canvas extends JPanel {
     @Override
     public Graphics getGraphics() {
         Graphics2D g2 = (Graphics2D) super.getGraphics();
-        g2.setStroke(new BasicStroke(10));
+        g2.setStroke(new BasicStroke(5));
         return g2;
     }
 
