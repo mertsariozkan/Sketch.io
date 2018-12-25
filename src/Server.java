@@ -4,7 +4,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
@@ -19,7 +18,7 @@ public class Server {
     private Socket connectionSocket = null;
     private ServerThread sThread = null;
 
-    private Server(int port) throws IOException, SQLException {
+    private Server(int port) {
         rooms = new ArrayList<>();
         userLists = new ArrayList<>();
         statusOfRoomAvailability = new ArrayList<>();
@@ -28,7 +27,12 @@ public class Server {
             userLists.add(null);
             statusOfRoomAvailability.add(true);
         }
-        ServerSocket server = new ServerSocket(port);
+        ServerSocket server = null;
+        try {
+            server = new ServerSocket(port);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         while (true) {
             try {
@@ -42,7 +46,7 @@ public class Server {
                 rooms.get(Integer.parseInt(id)).getClientOutputs().add(output);
                 rooms.get(Integer.parseInt(id)).getClientInputs().add(input);
                 for (int i = 0; i < rooms.size(); i++) {
-                    if (rooms.get(i).getClientOutputs().size() >= 2 && statusOfRoomAvailability.get(i)) {
+                    if (rooms.get(i).getClientOutputs().size() >= 3 && statusOfRoomAvailability.get(i)) {
                         sThread = new ServerThread(rooms.get(i), connectionSocket, input, output);
                         sThread.start();
                         statusOfRoomAvailability.set(i, false);
@@ -52,14 +56,18 @@ public class Server {
                 e.printStackTrace();
                 sThread.stop();
                 sThread = null;
-                connectionSocket.close();
+                try {
+                    connectionSocket.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
         }
 
     }
 
 
-    public static void main(String[] args) throws IOException, SQLException {
+    public static void main(String[] args) {
         new Server(3000);
 
     }

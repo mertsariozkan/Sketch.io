@@ -1,7 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.sql.SQLException;
 
 public class RoomPage extends CustomFrame {
     public RoomPage(String username) {
@@ -13,11 +11,7 @@ public class RoomPage extends CustomFrame {
             JButton button = new JButton("Room [" + (i + 1) + "]");
             button.addActionListener(e -> {
                 Thread thread = new Thread(() -> {
-                    try {
-                        new Client("localhost", 3000, username, a);
-                    } catch (IOException | SQLException e1) {
-                        e1.printStackTrace();
-                    }
+                    new Client("localhost", 3000, username, a);
                 });
                 setVisible(false);
                 thread.start();

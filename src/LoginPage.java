@@ -1,8 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.SQLException;
 
 public class LoginPage extends CustomFrame {
     public LoginPage() {
@@ -21,13 +18,9 @@ public class LoginPage extends CustomFrame {
             String question = JOptionPane.showInputDialog(this, "Add new question word");
             if (!question.equals("")) {
                 question = question.toUpperCase();
-                try {
-                    DatabaseOperations databaseOperations = new DatabaseOperations();
-                    databaseOperations.addQuestionWord(question);
-                    databaseOperations.closeConnection();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
+                DatabaseOperations databaseOperations = new DatabaseOperations();
+                databaseOperations.addQuestionWord(question);
+                databaseOperations.closeConnection();
             }
         });
 

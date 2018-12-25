@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.Timer;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -27,7 +26,7 @@ public class Client implements ActionListener {
     private String questionWord;
     private int score;
 
-    public Client(String ip, int port, String nickname, int id) throws IOException, SQLException {
+    public Client(String ip, int port, String nickname, int id) {
         this.nickname = nickname;
         this.score = 0;
         coordinates = new CopyOnWriteArrayList<>();
@@ -94,10 +93,13 @@ public class Client implements ActionListener {
         });
 
 
-        socket = new Socket(ip, port);
-        input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        output = new PrintWriter(socket.getOutputStream(), true);
-
+        try {
+            socket = new Socket(ip, port);
+            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            output = new PrintWriter(socket.getOutputStream(), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         output.println("$rid" + id);
         output.flush();
 
@@ -114,7 +116,7 @@ public class Client implements ActionListener {
         String message;
         try {
             while ((message = input.readLine()) != null) {
-                if (score >= 5) {
+                if (score >= 20) {
                     score = 0;
                     output.println("$ovr" + nickname);
                     output.flush();

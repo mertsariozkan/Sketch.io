@@ -4,7 +4,6 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
@@ -18,7 +17,7 @@ public class ServerThread extends Thread {
     private TreeMap<String, Integer> userList;
     private DatabaseOperations databaseOperations;
 
-    public ServerThread(Room room, Socket connectionSocket, BufferedReader input, PrintWriter output) throws SQLException {
+    public ServerThread(Room room, Socket connectionSocket, BufferedReader input, PrintWriter output) {
         this.room = room;
         this.connectionSocket = connectionSocket;
         this.input = input;
@@ -36,12 +35,8 @@ public class ServerThread extends Thread {
                 room.getClientOutputs().get(i).println("$drawer");
             } else room.getClientOutputs().get(i).println("$guesser");
 
-            ClientThread clientThread = null;
-            try {
-                clientThread = new ClientThread(connectionSocket, room.getClientInputs().get(i), room.getClientOutputs().get(i), room.getId());
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            ClientThread clientThread;
+            clientThread = new ClientThread(connectionSocket, room.getClientInputs().get(i), room.getClientOutputs().get(i), room.getId());
             clientThreads.add(clientThread);
         }
 
@@ -65,18 +60,14 @@ public class ServerThread extends Thread {
                     i = 0;
                 }
                 room.getClientOutputs().get(i).println("$drawer");
-                try {
-                    databaseOperations.connectToDatabase();
-                    String randomQ = databaseOperations.randomQuestion();
-                    databaseOperations.closeConnection();
-                    for (PrintWriter o : room.getClientOutputs()) {
-                        o.println(randomQ);
-                    }
-
-
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
+                databaseOperations.connectToDatabase();
+                String randomQ = databaseOperations.randomQuestion();
+                databaseOperations.closeConnection();
+                for (PrintWriter o : room.getClientOutputs()) {
+                    o.println(randomQ);
                 }
+
+
                 for (int j = 0; j < room.getClientOutputs().size(); j++) {
                     if (j != i) {
                         room.getClientOutputs().get(j).println("$guesser");

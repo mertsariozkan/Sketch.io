@@ -1,8 +1,6 @@
 import org.junit.Before;
 import org.junit.Test;
 
-import java.sql.SQLException;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -12,11 +10,7 @@ public class UnitTests {
 
     @Before
     public void setUp() {
-        try {
-            databaseOperations = new DatabaseOperations();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        databaseOperations = new DatabaseOperations();
         new LoginPage();
     }
 
@@ -27,10 +21,6 @@ public class UnitTests {
 
     @Test
     public void testQuestion() {
-        try {
-            assertNotNull(databaseOperations.randomQuestion());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        assertNotNull(databaseOperations.randomQuestion());
     }
 }

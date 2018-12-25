@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.sql.SQLException;
 
 public class ClientThread extends Thread {
     private Socket socket;
@@ -14,7 +13,7 @@ public class ClientThread extends Thread {
     private int roomId;
     private boolean loop = true;
 
-    public ClientThread(Socket socket, BufferedReader input, PrintWriter output, int roomId) throws SQLException {
+    public ClientThread(Socket socket, BufferedReader input, PrintWriter output, int roomId) {
         this.socket = socket;
         this.input = input;
         this.output = output;
@@ -62,8 +61,8 @@ public class ClientThread extends Thread {
                     }
                 }
             }
-        } catch (IOException | SQLException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Room is disconnected.");
         } finally {
             Server.rooms.set(roomId, new Room(roomId));
             Server.userLists.set(roomId, null);
