@@ -25,44 +25,41 @@ public class ClientThread extends Thread {
     @Override
     public void run() {
         try {
-        while (loop) {
-            String message;
+            while (loop) {
+                String message;
                 while (loop && (message = input.readLine()) != null) {
-                        if (message.contains("$skipword")) {
-                            createUserList(message);
+                    if (message.contains("$skipword")) {
+                        createUserList(message);
+                        databaseOperations.connectToDatabase();
+                        String randomQ = databaseOperations.randomQuestion();
+                        databaseOperations.closeConnection();
+                        broadcastMessage(randomQ);
+                        broadcastMessage(Server.userLists.get(roomId));
+                    } else if (message.contains("$usr")) {
+                        createUserList(message);
+                    } else if (message.contains("$scs")) {
+                        Server.correctAnswerCounter++;
+                        if (Server.correctAnswerCounter == Server.rooms.get(roomId).getClientOutputs().size() - 1) {
+                            Server.correctAnswerCounter = 0;
+                            databaseOperations.connectToDatabase();
                             String randomQ = databaseOperations.randomQuestion();
+                            databaseOperations.closeConnection();
                             broadcastMessage(randomQ);
-                            broadcastMessage(Server.userLists.get(roomId));
                         }
-                        else if (message.contains("$usr")) {
-                            createUserList(message);
-                        }
-                        else if (message.contains("$scs")) {
-                            Server.correctAnswerCounter++;
-                            if (Server.correctAnswerCounter == Server.rooms.get(roomId).getClientOutputs().size() - 1) {
-                                Server.correctAnswerCounter = 0;
-                                String randomQ = databaseOperations.randomQuestion();
-                                broadcastMessage(randomQ);
-                            }
-                        }
-                        else if (message.contains("$ovr")) {
-                            broadcastMessage(message);
-                        }
-                        else if (message.contains("$scc")) {
-                            createUserList(message);
-                            broadcastMessage(Server.userLists.get(roomId));
-                        }
-                        else if (message.contains("$ovx")) {
-                            createUserList(message);
-                            broadcastMessage(Server.userLists.get(roomId));
-                        }
-                        else if(message.equals("$cls")) {
-                            broadcastMessage(message);
-                            loop = false;
-                        }
-                        else {
-                            broadcastMessage(message);
-                        }
+                    } else if (message.contains("$ovr")) {
+                        broadcastMessage(message);
+                    } else if (message.contains("$scc")) {
+                        createUserList(message);
+                        broadcastMessage(Server.userLists.get(roomId));
+                    } else if (message.contains("$ovx")) {
+                        createUserList(message);
+                        broadcastMessage(Server.userLists.get(roomId));
+                    } else if (message.equals("$cls")) {
+                        broadcastMessage(message);
+                        loop = false;
+                    } else {
+                        broadcastMessage(message);
+                    }
                 }
             }
         } catch (IOException | SQLException e) {
@@ -70,7 +67,7 @@ public class ClientThread extends Thread {
         } finally {
             Server.rooms.set(roomId, new Room(roomId));
             Server.userLists.set(roomId, null);
-            Server.statusOfRoomAvailability.set(roomId,true);
+            Server.statusOfRoomAvailability.set(roomId, true);
         }
     }
 

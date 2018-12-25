@@ -14,8 +14,8 @@ public class Server {
     static ArrayList<Room> rooms;
     static ArrayList<TreeMap> userLists;
     static ArrayList<Boolean> statusOfRoomAvailability;
-    private BufferedReader input = null;
-    private PrintWriter output = null;
+    private BufferedReader input;
+    private PrintWriter output;
     private Socket connectionSocket = null;
     private ServerThread sThread = null;
 
@@ -48,20 +48,20 @@ public class Server {
                         statusOfRoomAvailability.set(i, false);
                     }
                 }
-                } catch(IOException e){
-                    e.printStackTrace();
-                    sThread.stop();
-                    sThread = null;
-                    connectionSocket.close();
-                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                sThread.stop();
+                sThread = null;
+                connectionSocket.close();
             }
-
-        }
-
-
-        public static void main (String[]args) throws IOException, SQLException {
-            new Server(3000);
-
         }
 
     }
+
+
+    public static void main(String[] args) throws IOException, SQLException {
+        new Server(3000);
+
+    }
+
+}

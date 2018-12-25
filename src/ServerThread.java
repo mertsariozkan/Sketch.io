@@ -25,7 +25,7 @@ public class ServerThread extends Thread {
         this.output = output;
         databaseOperations = new DatabaseOperations();
         userList = new TreeMap<>();
-        Server.userLists.add(room.getId() , userList);
+        Server.userLists.add(room.getId(), userList);
         clientThreads = new ArrayList<>();
     }
 
@@ -66,7 +66,9 @@ public class ServerThread extends Thread {
                 }
                 room.getClientOutputs().get(i).println("$drawer");
                 try {
+                    databaseOperations.connectToDatabase();
                     String randomQ = databaseOperations.randomQuestion();
+                    databaseOperations.closeConnection();
                     for (PrintWriter o : room.getClientOutputs()) {
                         o.println(randomQ);
                     }

@@ -37,17 +37,19 @@ public class Client implements ActionListener {
         panel = drawingPage.getCanvas();
         drawingPage.getMessageField().addKeyListener(new KeyListener() {
             @Override
-            public void keyTyped(KeyEvent e) { }
+            public void keyTyped(KeyEvent e) {
+            }
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode()==KeyEvent.VK_ENTER) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     drawingPage.getSendButton().doClick();
                 }
             }
+
             @Override
             public void keyReleased(KeyEvent e) {
-                if(e.getKeyCode()==KeyEvent.VK_ENTER) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     drawingPage.getMessageField().setText("");
                 }
             }
@@ -191,7 +193,7 @@ public class Client implements ActionListener {
                         for (String c : coordinates) {
                             if (!c.equals("")) {
                                 String xy[] = c.split("-");
-                                if (!xy[2].equals("") && !xy[3].equals("") && !xy[0].equals("") && !xy[1].equals("") ) {
+                                if (!xy[2].equals("") && !xy[3].equals("") && !xy[0].equals("") && !xy[1].equals("")) {
                                     oldX = Integer.parseInt(xy[0]);
                                     oldY = Integer.parseInt(xy[1]);
                                     currentX = Integer.parseInt(xy[2]);
