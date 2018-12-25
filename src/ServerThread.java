@@ -2,7 +2,6 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.sql.SQLException;
@@ -14,10 +13,10 @@ public class ServerThread extends Thread {
     private Socket connectionSocket;
     private BufferedReader input;
     private PrintWriter output;
-    ArrayList<ClientThread> clientThreads;
+    private ArrayList<ClientThread> clientThreads;
     static Timer timer;
-    TreeMap<String, Integer> userList;
-    static DatabaseOperations databaseOperations;
+    private TreeMap<String, Integer> userList;
+    private DatabaseOperations databaseOperations;
 
     public ServerThread(Room room, Socket connectionSocket, BufferedReader input, PrintWriter output) throws SQLException {
         this.room = room;
@@ -26,7 +25,7 @@ public class ServerThread extends Thread {
         this.output = output;
         databaseOperations = new DatabaseOperations();
         userList = new TreeMap<>();
-        Server.userLists.add(room.getId() , userList);
+        Server.userLists.add(room.getId(), userList);
         clientThreads = new ArrayList<>();
     }
 
@@ -34,28 +33,23 @@ public class ServerThread extends Thread {
     public void run() {
         for (int i = 0; i < room.getClientOutputs().size(); i++) {
             if (i == 0) {
-                System.out.println("sent drawer message");
-                room.getClientOutputs().get(i).println("drawer");
-            } else room.getClientOutputs().get(i).println("guesser");
+                room.getClientOutputs().get(i).println("$drawer");
+            } else room.getClientOutputs().get(i).println("$guesser");
 
-            System.out.println("Before thread arrayList addition");
-            Thread clientThread = null;
+            ClientThread clientThread = null;
             try {
                 clientThread = new ClientThread(connectionSocket, room.getClientInputs().get(i), room.getClientOutputs().get(i), room.getId());
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            clientThreads.add((ClientThread) clientThread);
+            clientThreads.add(clientThread);
         }
 
         for (ClientThread thr : clientThreads) {
-            System.out.println("aaaaa");
             thr.start();
-            System.out.println("thread started");
-
         }
         for (PrintWriter p : room.getClientOutputs()) {
-            p.println("GAME");
+            p.println("$GAME");
             p.flush();
         }
         timer = new Timer(10000, new ActionListener() {
@@ -70,9 +64,11 @@ public class ServerThread extends Thread {
                 if (i >= room.getClientOutputs().size()) {
                     i = 0;
                 }
-                room.getClientOutputs().get(i).println("drawer");
+                room.getClientOutputs().get(i).println("$drawer");
                 try {
+                    databaseOperations.connectToDatabase();
                     String randomQ = databaseOperations.randomQuestion();
+                    databaseOperations.closeConnection();
                     for (PrintWriter o : room.getClientOutputs()) {
                         o.println(randomQ);
                     }
@@ -83,7 +79,7 @@ public class ServerThread extends Thread {
                 }
                 for (int j = 0; j < room.getClientOutputs().size(); j++) {
                     if (j != i) {
-                        room.getClientOutputs().get(j).println("guesser");
+                        room.getClientOutputs().get(j).println("$guesser");
                     }
                 }
                 i++;
@@ -93,7 +89,7 @@ public class ServerThread extends Thread {
         timer.start();
         Timer labelTimer = new Timer(1000, e -> {
             for (PrintWriter wrt : room.getClientOutputs()) {
-                wrt.println("tmr");
+                wrt.println("$tmr");
             }
         });
         labelTimer.start();

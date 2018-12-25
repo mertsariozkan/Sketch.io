@@ -2,7 +2,7 @@ import java.sql.*;
 
 public class DatabaseOperations {
 
-    private static Connection connection;
+    private Connection connection;
 
     public DatabaseOperations() throws SQLException {
         connectToDatabase();
@@ -10,33 +10,28 @@ public class DatabaseOperations {
                 + " id integer primary key,\n"
                 + " question text not null\n"
                 + ");";
-
         Statement statement = connection.createStatement();
-
         statement.execute(createQuestionsTable);
-
-        String createClientsTable = "CREATE TABLE IF NOT EXISTS clients (\n"
-                + " id integer primary key,\n"
-                + " clientName text not null,\n"
-                + " score integer\n"
-                + ");";
-
-        Statement statementClients = connection.createStatement();
-        statementClients.execute(createClientsTable);
-
-
     }
 
-    public void connectToDatabase(){
-            try {
-                String connectionUrl = "jdbc:sqlite:sketchio.db";
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
-                connection = DriverManager.getConnection(connectionUrl);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } catch (Exception e){
-                e.printStackTrace();
-            }
+    public void connectToDatabase() {
+        try {
+            String connectionUrl = "jdbc:sqlite:sketchio.db";
+
+            connection = DriverManager.getConnection(connectionUrl);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -45,14 +40,18 @@ public class DatabaseOperations {
         Statement selectStatement = connection.createStatement();
         ResultSet sizeSet = selectStatement.executeQuery(selectQuery);
         int size = sizeSet.getInt(1);
-        int randomizedNumber =(int)(Math.random() * ((size - 1) + 1)) + 1 ;
+        int randomizedNumber = (int) (Math.random() * ((size - 1) + 1)) + 1;
 
         String randomQuestionQuery = "SELECT question FROM questions WHERE id = " + randomizedNumber;
         Statement randomStatement = connection.createStatement();
         ResultSet randomQ = randomStatement.executeQuery(randomQuestionQuery);
 
-        return "que"+randomQ.getString("question");
+        return "$que" + randomQ.getString("question");
+    }
 
-
+    public void addQuestionWord(String questionWord) throws SQLException {
+        String insertQuestion = "INSERT INTO questions(question) VALUES ('" + questionWord + "')";
+        Statement statement = connection.createStatement();
+        statement.execute(insertQuestion);
     }
 }
