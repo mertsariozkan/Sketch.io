@@ -22,15 +22,14 @@ public class DatabaseOperations {
         }
     }
 
-    public void connectToDatabase() {
+    public boolean connectToDatabase() {
         try {
             String connectionUrl = "jdbc:sqlite:sketchio.db";
-
             connection = DriverManager.getConnection(connectionUrl);
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+            return false;
         }
 
     }
