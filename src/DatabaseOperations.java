@@ -51,7 +51,7 @@ public class DatabaseOperations {
         Statement randomStatement = connection.createStatement();
         ResultSet randomQ = randomStatement.executeQuery(randomQuestionQuery);
 
-        return "que"+randomQ.getString("question");
+        return "$que"+randomQ.getString("question");
 
 
     }

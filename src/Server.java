@@ -14,12 +14,12 @@ public class Server {
     static ArrayList<Room> rooms;
     static ArrayList<TreeMap> userLists;
     static ArrayList<Boolean> statusOfRoomAvailability;
-    BufferedReader input = null;
-    PrintWriter output = null;
-    Socket connectionSocket = null;
-    ServerThread sThread = null;
+    private BufferedReader input = null;
+    private PrintWriter output = null;
+    private Socket connectionSocket = null;
+    private ServerThread sThread = null;
 
-    public Server(int port) throws IOException, SQLException {
+    private Server(int port) throws IOException, SQLException {
         rooms = new ArrayList<>();
         userLists = new ArrayList<>();
         statusOfRoomAvailability = new ArrayList<>();
@@ -37,13 +37,10 @@ public class Server {
                 input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 output = new PrintWriter(connectionSocket.getOutputStream());
                 String id = input.readLine();
-                while (!id.contains("rid")) ;
-                id = id.substring(3);
+                while (!id.contains("$rid")) ;
+                id = id.substring(4);
                 rooms.get(Integer.parseInt(id)).getClientOutputs().add(output);
                 rooms.get(Integer.parseInt(id)).getClientInputs().add(input);
-                System.out.println(rooms.get(Integer.parseInt(id)).getClientOutputs());
-                System.out.println(id);
-                System.out.println("added output streams to copyonwritelist");
                 for (int i = 0; i < rooms.size(); i++) {
                     if (rooms.get(i).getClientOutputs().size() >= 2 && statusOfRoomAvailability.get(i)) {
                         sThread = new ServerThread(rooms.get(i), connectionSocket, input, output);
@@ -51,7 +48,6 @@ public class Server {
                         statusOfRoomAvailability.set(i, false);
                     }
                 }
-                System.out.println("Before thread arrayList addition");
                 } catch(IOException e){
                     e.printStackTrace();
                     sThread.stop();

@@ -8,11 +8,11 @@ public class ClientThread extends Thread {
     private Socket socket;
     private BufferedReader input;
     private PrintWriter output;
-    DatabaseOperations databaseOperations;
-    String score;
-    String nickname;
-    int roomId;
-    boolean loop = true;
+    private DatabaseOperations databaseOperations;
+    private String score;
+    private String nickname;
+    private int roomId;
+    private boolean loop = true;
 
     public ClientThread(Socket socket, BufferedReader input, PrintWriter output, int roomId) throws SQLException {
         this.socket = socket;
@@ -28,59 +28,40 @@ public class ClientThread extends Thread {
         while (loop) {
             String message;
                 while (loop && (message = input.readLine()) != null) {
-                        if (message.contains("skipword")) {
+                        if (message.contains("$skipword")) {
                             createUserList(message);
                             String randomQ = databaseOperations.randomQuestion();
-                            for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
-                                o.println(randomQ);
-                                o.flush();
-                            }
-                            for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
-                                o.println(Server.userLists.get(roomId));
-                                o.flush();
-                            }
-
-                        } else if (message.contains("usr")) {
+                            broadcastMessage(randomQ);
+                            broadcastMessage(Server.userLists.get(roomId));
+                        }
+                        else if (message.contains("$usr")) {
                             createUserList(message);
-                        } else if (message.contains("scs")) {
+                        }
+                        else if (message.contains("$scs")) {
                             Server.correctAnswerCounter++;
                             if (Server.correctAnswerCounter == Server.rooms.get(roomId).getClientOutputs().size() - 1) {
                                 Server.correctAnswerCounter = 0;
                                 String randomQ = databaseOperations.randomQuestion();
-                                for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
-                                    o.println(randomQ);
-                                }
+                                broadcastMessage(randomQ);
                             }
-                        } else if (message.contains("scc")) {
+                        }
+                        else if (message.contains("$ovr")) {
+                            broadcastMessage(message);
+                        }
+                        else if (message.contains("$scc")) {
                             createUserList(message);
-                            for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()) {
-                                p.println(Server.userLists.get(roomId));
-                                p.flush();
-                            }
-                        } else if (message.contains("ovr")) {
-                            for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()) {
-                                p.println(message);
-                                System.out.println("Over message");
-                                p.flush();
-                            }
-                        } else if (message.contains("ovx")) {
+                            broadcastMessage(Server.userLists.get(roomId));
+                        }
+                        else if (message.contains("$ovx")) {
                             createUserList(message);
-                            for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()) {
-                                p.println(Server.userLists.get(roomId));
-                                p.flush();
-                            }
-                        } else if(message.equals("cls")) {
-                            for (PrintWriter p : Server.rooms.get(roomId).getClientOutputs()) {
-                                p.println(message);
-                                p.flush();
-                            }
-                            System.out.println("cls geldi");
+                            broadcastMessage(Server.userLists.get(roomId));
+                        }
+                        else if(message.equals("$cls")) {
+                            broadcastMessage(message);
                             loop = false;
-                        } else {
-                            for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
-                                o.println(message);
-                                o.flush();
-                            }
+                        }
+                        else {
+                            broadcastMessage(message);
                         }
                 }
             }
@@ -93,17 +74,24 @@ public class ClientThread extends Thread {
         }
     }
 
+    public void broadcastMessage(Object message) {
+        for (PrintWriter o : Server.rooms.get(roomId).getClientOutputs()) {
+            o.println(message);
+            o.flush();
+        }
+    }
+
 
     public void createUserList(String message) {
         String tempMessage = null;
-        if (message.contains("usr")) {
-            tempMessage = message.substring(3);
-        } else if (message.contains("skipword")) {
-            tempMessage = message.substring(8);
-        } else if (message.contains("ovx")) {
-            tempMessage = message.substring(3);
-        } else if (message.contains("scc")) {
-            tempMessage = message.substring(3);
+        if (message.contains("$usr")) {
+            tempMessage = message.substring(4);
+        } else if (message.contains("$skipword")) {
+            tempMessage = message.substring(9);
+        } else if (message.contains("$ovx")) {
+            tempMessage = message.substring(4);
+        } else if (message.contains("$scc")) {
+            tempMessage = message.substring(4);
         }
         char[] messageContent = tempMessage.toCharArray();
         boolean regexFlag = false;

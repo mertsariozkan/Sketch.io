@@ -21,7 +21,7 @@ public class Client implements ActionListener {
     private Timer timer;
     private DrawPage drawingPage;
     private String nickname;
-    private DatabaseOperations databaseOperations;
+
     private TreeMap<String, Integer> clients;
     private boolean isDrawer;
     private String questionWord;
@@ -32,22 +32,36 @@ public class Client implements ActionListener {
         this.score = 0;
         coordinates = new CopyOnWriteArrayList<>();
         drawingPage = new DrawPage();
-        databaseOperations = new DatabaseOperations();
         clients = new TreeMap<>();
 
         panel = drawingPage.getCanvas();
+        drawingPage.getMessageField().addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) { }
 
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode()==KeyEvent.VK_ENTER) {
+                    drawingPage.getSendButton().doClick();
+                }
+            }
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if(e.getKeyCode()==KeyEvent.VK_ENTER) {
+                    drawingPage.getMessageField().setText("");
+                }
+            }
+        });
         drawingPage.getPassWordButton().addActionListener(e -> {
             score -= 2;
-            output.println("skipword" + nickname + "/" + Integer.toString(score));
+            output.println("$skipword" + nickname + "/" + Integer.toString(score));
             output.flush();
-
         });
 
         drawingPage.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                output.println("cls");
+                output.println("$cls");
                 output.flush();
             }
         });
@@ -82,14 +96,14 @@ public class Client implements ActionListener {
         input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         output = new PrintWriter(socket.getOutputStream(), true);
 
-        output.println("rid" + id);
+        output.println("$rid" + id);
         output.flush();
 
         timer = new Timer();
         TimerTask job = new TimerTask() {
             @Override
             public void run() {
-                output.println("drw" + coordinates);
+                output.println("$drw" + coordinates);
                 coordinates.clear();
             }
         };
@@ -100,22 +114,22 @@ public class Client implements ActionListener {
             while ((message = input.readLine()) != null) {
                 if (score >= 5) {
                     score = 0;
-                    output.println("ovr" + nickname);
+                    output.println("$ovr" + nickname);
                     output.flush();
                 }
-                if (message.contains("msg")) {
-                    message = message.substring(3);
+                if (message.contains("$msg")) {
+                    message = message.substring(4);
                     drawingPage.getChatArea().append(message + "\n");
-                } else if (message.contains("scs")) {
-                    message = message.substring(3);
+                } else if (message.contains("$scs")) {
+                    message = message.substring(4);
                     if (isDrawer) {
                         score += 2;
-                        output.println("scc" + nickname + "/" + Integer.toString(score));
+                        output.println("$scc" + nickname + "/" + Integer.toString(score));
                         output.flush();
                     }
                     drawingPage.getChatArea().append(message + "\n");
-                } else if (message.contains("GAME")) {
-                    output.println("usr" + nickname + "/" + Integer.toString(score));
+                } else if (message.contains("$GAME")) {
+                    output.println("$usr" + nickname + "/" + Integer.toString(score));
                     output.flush();
                 } else if (message.contains("{")) {
                     System.out.println(message);
@@ -143,32 +157,33 @@ public class Client implements ActionListener {
                         Map.Entry me = (Map.Entry) aSet;
                         drawingPage.getTableModel().addRow(new Object[]{me.getKey(), me.getValue()});
                     }
-                } else if (message.contains("drawer")) {
+                } else if (message.contains("$drawer")) {
                     System.out.println("this client is drawer");
                     clearCanvas();
                     isDrawer = true;
+                    drawingPage.getPassWordButton().setVisible(true);
                     drawingPage.getQuestionLabel().setVisible(true);
                     drawingPage.getMessageField().setFocusable(false);
-                } else if (message.contains("guesser")) {
-                    drawingPage.getPassWordButton().setFocusable(false);
+                } else if (message.contains("$guesser")) {
+                    drawingPage.getPassWordButton().setVisible(false);
                     System.out.println("this client is guesser");
                     clearCanvas();
                     isDrawer = false;
                     drawingPage.getQuestionLabel().setVisible(false);
                     drawingPage.getMessageField().setFocusable(true);
                     drawingPage.getSendButton().setFocusable(false);
-                } else if (message.contains("que")) {
+                } else if (message.contains("$que")) {
                     clearCanvas();
-                    questionWord = message.substring(3);
-                    drawingPage.getQuestionLabel().setText(message.substring(3));
+                    questionWord = message.substring(4);
+                    drawingPage.getQuestionLabel().setText(message.substring(4));
                     System.out.println(questionWord);
-                } else if (message.contains("tmr")) {
+                } else if (message.contains("$tmr")) {
                     if (drawingPage.getTimeCounter().getText().equals("0")) drawingPage.getTimeCounter().setText("10");
 
                     drawingPage.getTimeCounter().setText(String.valueOf(Integer.parseInt(drawingPage.getTimeCounter().getText()) - 1));
-                } else if (message.contains("drw")) {
+                } else if (message.contains("$drw")) {
                     if (!isDrawer) {
-                        message = message.substring(3);
+                        message = message.substring(4);
                         message = message.replaceAll("\\s+", "");
                         message = message.substring(1, message.length() - 1);
                         String[] coordinates = message.split(",");
@@ -176,7 +191,7 @@ public class Client implements ActionListener {
                         for (String c : coordinates) {
                             if (!c.equals("")) {
                                 String xy[] = c.split("-");
-                                if (!xy[2].equals("") && !xy[3].equals("")) {
+                                if (!xy[2].equals("") && !xy[3].equals("") && !xy[0].equals("") && !xy[1].equals("") ) {
                                     oldX = Integer.parseInt(xy[0]);
                                     oldY = Integer.parseInt(xy[1]);
                                     currentX = Integer.parseInt(xy[2]);
@@ -187,13 +202,13 @@ public class Client implements ActionListener {
 
                         }
                     }
-                } else if (message.contains("ovr")) {
-                    message = message.substring(3);
+                } else if (message.contains("$ovr")) {
+                    message = message.substring(4);
                     score = 0;
-                    output.println("ovx" + nickname + "/" + Integer.toString(score));
+                    output.println("$ovx" + nickname + "/" + Integer.toString(score));
                     drawingPage.getChatArea().setText("Game over. Winner is: " + message + "\n");
 
-                } else if (message.equals("cls")) {
+                } else if (message.equals("$cls")) {
                     drawingPage.setVisible(false);
                     new RoomPage(nickname);
                     break;
@@ -234,15 +249,14 @@ public class Client implements ActionListener {
         if (e.getSource() == drawingPage.getSendButton()) {
             if (!drawingPage.getMessageField().getText().isEmpty()) {
                 if (drawingPage.getMessageField().getText().stripTrailing().equalsIgnoreCase(questionWord)) {
-                    System.out.println("CORRECCT");
-                    output.println("scs" + nickname + " guessed the correct answer!");
+                    output.println("$scs" + nickname + " guessed the correct answer!");
                     output.flush();
                     score += 5;
-                    output.println("scc" + nickname + "/" + Integer.toString(score));
+                    output.println("$scc" + nickname + "/" + Integer.toString(score));
                     output.flush();
                     drawingPage.getMessageField().setText("");
                 } else {
-                    String clientMsg = "msg" + nickname + ": " + drawingPage.getMessageField().getText();
+                    String clientMsg = "$msg" + nickname + ": " + drawingPage.getMessageField().getText();
                     output.println(clientMsg);
                     output.flush();
                     drawingPage.getMessageField().setText("");

@@ -17,7 +17,7 @@ public class DrawPage extends CustomFrame {
         getRootPane().setDefaultButton(sendButton);
         int pageHeight = getHeight();
         int pageWidth = getWidth();
-        setResizable(true);
+
 
         // Creating 'CANVAS' ui component.
         canvas = new Canvas(pageWidth, pageHeight);
