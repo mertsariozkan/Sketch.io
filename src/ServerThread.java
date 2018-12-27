@@ -43,15 +43,13 @@ public class ServerThread extends Thread {
         for (ClientThread thr : clientThreads) {
             thr.start();
         }
-        for (PrintWriter p : room.getClientOutputs()) {
-            p.println("$GAME");
-            p.flush();
-        }
+
         timer = new Timer(30000, new ActionListener() {
             int i = 0;
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                Server.correctAnswerCounter = 0;
                 for (PrintWriter o : room.getClientOutputs()) {
                     o.println(userList);
                     o.flush();

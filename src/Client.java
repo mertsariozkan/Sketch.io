@@ -133,9 +133,6 @@ public class Client implements ActionListener {
                     }
                     drawingPage.getChatArea().append(message + "\n");
                     System.out.println("Correct answer append");
-                } else if (message.contains("$GAME")) {
-                    output.println("$usr" + nickname + "/" + Integer.toString(score));
-                    output.flush();
                 } else if (message.contains("{")) {
                     System.out.println(message);
                     message = message.substring(1, message.length() - 1);
@@ -181,12 +178,17 @@ public class Client implements ActionListener {
                     clearCanvas();
                     if(!isDrawer) {
                         drawingPage.getMessageField().setFocusable(true);
+                        drawingPage.getMessageField().setText("");
                     }
                     questionWord = message.substring(4);
                     drawingPage.getQuestionLabel().setText(message.substring(4));
                     System.out.println(questionWord);
                 } else if (message.contains("$tmr")) {
-                    if (drawingPage.getTimeCounter().getText().equals("0")) drawingPage.getTimeCounter().setText("30");
+                    output.println("$usr" + nickname + "/" + Integer.toString(score));
+                    output.flush();
+                    if (drawingPage.getTimeCounter().getText().equals("0")) {
+                        drawingPage.getTimeCounter().setText("30");
+                    }
 
                     drawingPage.getTimeCounter().setText(String.valueOf(Integer.parseInt(drawingPage.getTimeCounter().getText()) - 1));
                 } else if (message.contains("$drw")) {

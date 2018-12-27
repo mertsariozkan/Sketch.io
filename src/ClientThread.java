@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ClientThread extends Thread {
     private Socket socket;
@@ -12,6 +13,7 @@ public class ClientThread extends Thread {
     private String nickname;
     private int roomId;
     private boolean loop = true;
+    private ArrayList<Integer> roomInfo;
 
     public ClientThread(Socket socket, BufferedReader input, PrintWriter output, int roomId) {
         this.socket = socket;
@@ -28,6 +30,7 @@ public class ClientThread extends Thread {
                 String message;
                 while (loop && (message = input.readLine()) != null) {
                     if (message.contains("$skipword")) {
+                        Server.correctAnswerCounter = 0;
                         createUserList(message);
                         databaseOperations.connectToDatabase();
                         String randomQ = databaseOperations.randomQuestion();
@@ -36,6 +39,7 @@ public class ClientThread extends Thread {
                         broadcastMessage(Server.userLists.get(roomId));
                     } else if (message.contains("$usr")) {
                         createUserList(message);
+                        broadcastMessage(Server.userLists.get(roomId));
                     } else if (message.contains("$scs")) {
                         Server.correctAnswerCounter++;
                         broadcastMessage(message);
@@ -54,6 +58,13 @@ public class ClientThread extends Thread {
                     } else if (message.contains("$ovx")) {
                         createUserList(message);
                         broadcastMessage(Server.userLists.get(roomId));
+                    } else if(message.contains("$gR")) {
+                        roomInfo = new ArrayList<>();
+                        for(Room r : Server.rooms) {
+                            roomInfo.add(r.getClientOutputs().size());
+                        }
+                        output.println(roomInfo);
+                        output.flush();
                     } else if (message.equals("$cls")) {
                         broadcastMessage(message);
                         loop = false;

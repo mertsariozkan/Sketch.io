@@ -1,3 +1,5 @@
+import jdk.swing.interop.SwingInterOpUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,6 +19,7 @@ public class Server {
     private PrintWriter output;
     private Socket connectionSocket = null;
     private ServerThread sThread = null;
+    private ArrayList<Integer> roomInfo;
 
     private Server(int port) {
         rooms = new ArrayList<>();
@@ -34,32 +37,42 @@ public class Server {
             e.printStackTrace();
         }
 
+        loop:
         while (true) {
             try {
                 connectionSocket = server.accept();
-
                 input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 output = new PrintWriter(connectionSocket.getOutputStream());
+                //RoomThread roomThread = new RoomThread(connectionSocket,input,output);
+                //roomThread.start();
                 String id = input.readLine();
-                while (!id.contains("$rid")) ;
-                id = id.substring(4);
-                rooms.get(Integer.parseInt(id)).getClientOutputs().add(output);
-                rooms.get(Integer.parseInt(id)).getClientInputs().add(input);
-                for (int i = 0; i < rooms.size(); i++) {
-                    if (rooms.get(i).getClientOutputs().size() >= 3 && statusOfRoomAvailability.get(i)) {
-                        sThread = new ServerThread(rooms.get(i), connectionSocket, input, output);
-                        sThread.start();
-                        statusOfRoomAvailability.set(i, false);
+                while (!id.contains("$rid")) {
+                    if(id.contains("$gR")) {
+                        roomInfo = new ArrayList<>();
+                        for(Room r : rooms) {
+                            roomInfo.add(r.getClientOutputs().size());
+                        }
+                        output.println(roomInfo);
+                        output.flush();
+                        continue loop;
                     }
                 }
+                    id = id.substring(4);
+                    rooms.get(Integer.parseInt(id)).getClientOutputs().add(output);
+                    rooms.get(Integer.parseInt(id)).getClientInputs().add(input);
+                    for (int i = 0; i < rooms.size(); i++) {
+                        if (rooms.get(i).getClientOutputs().size() >= 3 && statusOfRoomAvailability.get(i)) {
+                            sThread = new ServerThread(rooms.get(i), connectionSocket, input, output);
+                            sThread.start();
+                            statusOfRoomAvailability.set(i, false);
+                        }
+                    }
             } catch (IOException e) {
-                e.printStackTrace();
                 sThread.stop();
                 sThread = null;
                 try {
                     connectionSocket.close();
                 } catch (IOException e1) {
-                    e1.printStackTrace();
                 }
             }
         }
