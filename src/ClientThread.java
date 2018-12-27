@@ -38,6 +38,7 @@ public class ClientThread extends Thread {
                         createUserList(message);
                     } else if (message.contains("$scs")) {
                         Server.correctAnswerCounter++;
+                        broadcastMessage(message);
                         if (Server.correctAnswerCounter == Server.rooms.get(roomId).getClientOutputs().size() - 1) {
                             Server.correctAnswerCounter = 0;
                             databaseOperations.connectToDatabase();
