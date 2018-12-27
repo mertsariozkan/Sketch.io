@@ -132,6 +132,7 @@ public class Client implements ActionListener {
                         output.flush();
                     }
                     drawingPage.getChatArea().append(message + "\n");
+                    System.out.println("Correct answer append");
                 } else if (message.contains("$GAME")) {
                     output.println("$usr" + nickname + "/" + Integer.toString(score));
                     output.flush();
@@ -178,11 +179,14 @@ public class Client implements ActionListener {
                     drawingPage.getSendButton().setFocusable(false);
                 } else if (message.contains("$que")) {
                     clearCanvas();
+                    if(!isDrawer) {
+                        drawingPage.getMessageField().setFocusable(true);
+                    }
                     questionWord = message.substring(4);
                     drawingPage.getQuestionLabel().setText(message.substring(4));
                     System.out.println(questionWord);
                 } else if (message.contains("$tmr")) {
-                    if (drawingPage.getTimeCounter().getText().equals("0")) drawingPage.getTimeCounter().setText("10");
+                    if (drawingPage.getTimeCounter().getText().equals("0")) drawingPage.getTimeCounter().setText("30");
 
                     drawingPage.getTimeCounter().setText(String.valueOf(Integer.parseInt(drawingPage.getTimeCounter().getText()) - 1));
                 } else if (message.contains("$drw")) {
@@ -259,6 +263,7 @@ public class Client implements ActionListener {
                     output.println("$scc" + nickname + "/" + Integer.toString(score));
                     output.flush();
                     drawingPage.getMessageField().setText("");
+                    drawingPage.getMessageField().setFocusable(false);
                 } else {
                     String clientMsg = "$msg" + nickname + ": " + drawingPage.getMessageField().getText();
                     output.println(clientMsg);

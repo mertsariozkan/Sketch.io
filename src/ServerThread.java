@@ -47,7 +47,7 @@ public class ServerThread extends Thread {
             p.println("$GAME");
             p.flush();
         }
-        timer = new Timer(10000, new ActionListener() {
+        timer = new Timer(30000, new ActionListener() {
             int i = 0;
 
             @Override
