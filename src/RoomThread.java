@@ -21,9 +21,7 @@ public class RoomThread extends Thread {
         try {
             String refreshRequest;
             while((refreshRequest=input.readLine())!=null) {
-                System.out.println("AAAA");
                 if (refreshRequest.contains("$gR")) {
-                    System.out.println("BBBB");
                     roomInfo = new ArrayList<>();
                     for (Room r : Server.rooms) {
                         roomInfo.add(r.getClientOutputs().size());

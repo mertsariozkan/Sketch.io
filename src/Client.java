@@ -41,6 +41,7 @@ public class Client implements ActionListener {
 
             @Override
             public void keyPressed(KeyEvent e) {
+                // Enter key check for chat input
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     drawingPage.getSendButton().doClick();
                 }
@@ -54,6 +55,7 @@ public class Client implements ActionListener {
             }
         });
         drawingPage.getPassWordButton().addActionListener(e -> {
+            // Skip current word to next word, update score
             score -= 2;
             output.println("$skipword" + nickname + "/" + Integer.toString(score));
             output.flush();
@@ -62,6 +64,7 @@ public class Client implements ActionListener {
         drawingPage.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                // Notify users of one user drop.
                 output.println("$cls");
                 output.flush();
             }
@@ -100,6 +103,7 @@ public class Client implements ActionListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // Room id of the current user.
         output.println("$rid" + id);
         output.flush();
 
@@ -107,6 +111,7 @@ public class Client implements ActionListener {
         TimerTask job = new TimerTask() {
             @Override
             public void run() {
+                // Sending coordinates of drawing every 10ms.
                 output.println("$drw" + coordinates);
                 coordinates.clear();
             }
@@ -117,6 +122,7 @@ public class Client implements ActionListener {
         try {
             while ((message = input.readLine()) != null) {
                 if (score >= 20) {
+                    // Check score for finishing the game and notify clients.
                     score = 0;
                     output.println("$ovr" + nickname);
                     output.flush();
@@ -124,32 +130,35 @@ public class Client implements ActionListener {
                     output.flush();
                 }
                 if (message.contains("$msg")) {
+                    // Send chat strings.
                     message = message.substring(4);
                     drawingPage.getChatArea().append(message + "\n");
                 } else if (message.contains("$scs")) {
                     message = message.substring(4);
                     if (isDrawer) {
+                        // If anyone guess, drawer earns points.
                         score += 2;
                         output.println("$scc" + nickname + "/" + Integer.toString(score));
                         output.flush();
                     }
                     drawingPage.getChatArea().append(message + "\n");
-                    System.out.println("Correct answer append");
+
                 } else if (message.contains("{")) {
-                    System.out.println(message);
+                    // Get userlist info with score
+                    // After input, parse incoming data
+
                     message = message.substring(1, message.length() - 1);
                     System.out.println(message);
                     String[] users = message.split(",");
-                    System.out.println(message);
                     for (String user : users) {
                         user = user.stripLeading();
-                        System.out.println(user);
                         String[] singleUser = user.split("=");
                         if (singleUser.length >= 2) {
                             System.out.println(singleUser[0] + "   " + singleUser[1]);
                             clients.put(singleUser[0], Integer.valueOf(singleUser[1]));
                         }
                     }
+                    // Update userlist for sorting by score value
                     for (int i = drawingPage.getTableModel().getRowCount() - 1; i > -1; i--) {
                         drawingPage.getTableModel().removeRow(i);
                     }
@@ -162,13 +171,14 @@ public class Client implements ActionListener {
                         drawingPage.getTableModel().addRow(new Object[]{me.getKey(), me.getValue()});
                     }
                 } else if (message.contains("$drawer")) {
-                    System.out.println("this client is drawer");
+                    // User role check for drawer and configure
                     clearCanvas();
                     isDrawer = true;
                     drawingPage.getPassWordButton().setVisible(true);
                     drawingPage.getQuestionLabel().setVisible(true);
                     drawingPage.getMessageField().setFocusable(false);
                 } else if (message.contains("$guesser")) {
+                    // User role check for guesser and configure
                     drawingPage.getPassWordButton().setVisible(false);
                     System.out.println("this client is guesser");
                     clearCanvas();
@@ -177,6 +187,7 @@ public class Client implements ActionListener {
                     drawingPage.getMessageField().setFocusable(true);
                     drawingPage.getSendButton().setFocusable(false);
                 } else if (message.contains("$que")) {
+                    // Get question and configure
                     clearCanvas();
                     if(!isDrawer) {
                         drawingPage.getMessageField().setFocusable(true);
@@ -186,6 +197,7 @@ public class Client implements ActionListener {
                     drawingPage.getQuestionLabel().setText(message.substring(4));
                     System.out.println(questionWord);
                 } else if (message.contains("$tmr")) {
+                    // Update time every one sec.
                     output.println("$usr" + nickname + "/" + Integer.toString(score));
                     output.flush();
                     if (drawingPage.getTimeCounter().getText().equals("0")) {
@@ -194,6 +206,7 @@ public class Client implements ActionListener {
 
                     drawingPage.getTimeCounter().setText(String.valueOf(Integer.parseInt(drawingPage.getTimeCounter().getText()) - 1));
                 } else if (message.contains("$drw")) {
+                    // If message contains coordinates, parse and draw.
                     if (!isDrawer) {
                         message = message.substring(4);
                         message = message.replaceAll("\\s+", "");
@@ -215,15 +228,16 @@ public class Client implements ActionListener {
                         }
                     }
                 } else if (message.contains("$ovr")) {
+                    // Control game over, print winner.
                     message = message.substring(4);
                     score = 0;
                     output.println("$ovx" + nickname + "/" + Integer.toString(score));
-                    //drawingPage.getChatArea().setText("Game over. Winner is: " + message + "\n");
                     JOptionPane.showMessageDialog(drawingPage.getRootPane(),"Game over. Winner is:" + message);
 
 
                 } else if (message.equals("$cls")) {
-                    JOptionPane.showMessageDialog(drawingPage.getRootPane() , "Someone has left the room. Game over." , "Game Over" , JOptionPane.WARNING_MESSAGE);
+                    // Check if any client disconnected
+                    JOptionPane.showMessageDialog(drawingPage.getRootPane() , "Someone has left the room. Game over." , "Game Over" , JOptionPane.WARNING_MESSAGE );
                     drawingPage.setVisible(false);
                     new RoomPage(nickname);
                     break;
@@ -236,12 +250,14 @@ public class Client implements ActionListener {
     }
 
     public void clearCanvas() {
+        // Clear canvas drawing
         panel.removeAll();
         panel.updateUI();
     }
 
     public static <K, V extends Comparable<V>> Map<K, V>
     sortByValues(final Map<K, V> map) {
+        // Sort userlist in descending order by score value
         Comparator<K> valueComparator =
                 (k2, k1) -> {
                     int compare =
@@ -264,6 +280,7 @@ public class Client implements ActionListener {
         if (e.getSource() == drawingPage.getSendButton()) {
             if (!drawingPage.getMessageField().getText().isEmpty()) {
                 if (drawingPage.getMessageField().getText().stripTrailing().equalsIgnoreCase(questionWord)) {
+                    // If outgoing message is the answer.
                     output.println("$scs" + nickname + " guessed the correct answer!");
                     output.flush();
                     score += 5;
@@ -272,6 +289,7 @@ public class Client implements ActionListener {
                     drawingPage.getMessageField().setText("");
                     drawingPage.getMessageField().setFocusable(false);
                 } else {
+                    // If outgoing message is anything other than an answer.
                     String clientMsg = "$msg" + nickname + ": " + drawingPage.getMessageField().getText();
                     output.println(clientMsg);
                     output.flush();

@@ -30,6 +30,7 @@ public class ClientThread extends Thread {
                 String message;
                 while (loop && (message = input.readLine()) != null) {
                     if (message.contains("$skipword")) {
+                        // Skip current word
                         Server.correctAnswerCounter = 0;
                         createUserList(message);
                         databaseOperations.connectToDatabase();
@@ -59,6 +60,7 @@ public class ClientThread extends Thread {
                         createUserList(message);
                         broadcastMessage(Server.userLists.get(roomId));
                     } else if(message.contains("$gR")) {
+                        // Update room info.
                         roomInfo = new ArrayList<>();
                         for(Room r : Server.rooms) {
                             roomInfo.add(r.getClientOutputs().size());
@@ -74,8 +76,8 @@ public class ClientThread extends Thread {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Room is disconnected.");
         } finally {
+            // Update userlist and room accordingly if client disconnects.
             Server.rooms.set(roomId, new Room(roomId));
             Server.userLists.set(roomId, null);
             Server.statusOfRoomAvailability.set(roomId, true);
@@ -89,7 +91,7 @@ public class ClientThread extends Thread {
         }
     }
 
-
+    // Create info from incoming message by parsing them to analyze nickname and score.
     public void createUserList(String message) {
         String tempMessage = null;
         if (message.contains("$usr")) {

@@ -17,6 +17,7 @@ public class ServerThread extends Thread {
     private TreeMap<String, Integer> userList;
     private DatabaseOperations databaseOperations;
 
+    // Every server thread represents an individual game started room.
     public ServerThread(Room room, Socket connectionSocket, BufferedReader input, PrintWriter output) {
         this.room = room;
         this.connectionSocket = connectionSocket;
