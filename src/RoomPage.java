@@ -96,7 +96,6 @@ public class RoomPage extends CustomFrame {
         });
 
         add(rootPanel,BorderLayout.CENTER);
-        add(refreshButton, BorderLayout.SOUTH);
         setVisible(true);
 
     }

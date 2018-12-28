@@ -5,7 +5,7 @@ public class CustomFrame extends JFrame {
         super("Sketch.io");
         setLayout(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1280,800);
+        setSize(1280,700);
         setResizable(false);
     }
 }

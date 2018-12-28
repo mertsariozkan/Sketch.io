@@ -120,6 +120,8 @@ public class Client implements ActionListener {
                     score = 0;
                     output.println("$ovr" + nickname);
                     output.flush();
+                    output.println("$cls");
+                    output.flush();
                 }
                 if (message.contains("$msg")) {
                     message = message.substring(4);
@@ -216,9 +218,12 @@ public class Client implements ActionListener {
                     message = message.substring(4);
                     score = 0;
                     output.println("$ovx" + nickname + "/" + Integer.toString(score));
-                    drawingPage.getChatArea().setText("Game over. Winner is: " + message + "\n");
+                    //drawingPage.getChatArea().setText("Game over. Winner is: " + message + "\n");
+                    JOptionPane.showMessageDialog(drawingPage.getRootPane(),"Game over. Winner is:" + message);
+
 
                 } else if (message.equals("$cls")) {
+                    JOptionPane.showMessageDialog(drawingPage.getRootPane() , "Someone has left the room. Game over." , "Game Over" , JOptionPane.WARNING_MESSAGE);
                     drawingPage.setVisible(false);
                     new RoomPage(nickname);
                     break;
