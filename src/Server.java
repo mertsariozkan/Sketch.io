@@ -43,8 +43,6 @@ public class Server {
                 connectionSocket = server.accept();
                 input = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                 output = new PrintWriter(connectionSocket.getOutputStream());
-                //RoomThread roomThread = new RoomThread(connectionSocket,input,output);
-                //roomThread.start();
                 String id = input.readLine();
                 while (!id.contains("$rid")) {
                     if(id.contains("$gR")) {

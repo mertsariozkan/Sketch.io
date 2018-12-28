@@ -85,8 +85,10 @@ public class Client implements ActionListener {
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (isDrawer) {
+
                     currentX = e.getX();
                     currentY = e.getY();
+
                     coordinates.add(oldX + "-" + oldY + "-" + currentX + "-" + currentY);
                     panel.getGraphics().drawLine(oldX, oldY, currentX, currentY);
                     oldX = currentX;
@@ -148,13 +150,11 @@ public class Client implements ActionListener {
                     // After input, parse incoming data
 
                     message = message.substring(1, message.length() - 1);
-                    System.out.println(message);
                     String[] users = message.split(",");
                     for (String user : users) {
                         user = user.stripLeading();
                         String[] singleUser = user.split("=");
                         if (singleUser.length >= 2) {
-                            System.out.println(singleUser[0] + "   " + singleUser[1]);
                             clients.put(singleUser[0], Integer.valueOf(singleUser[1]));
                         }
                     }
@@ -180,7 +180,6 @@ public class Client implements ActionListener {
                 } else if (message.contains("$guesser")) {
                     // User role check for guesser and configure
                     drawingPage.getPassWordButton().setVisible(false);
-                    System.out.println("this client is guesser");
                     clearCanvas();
                     isDrawer = false;
                     drawingPage.getQuestionLabel().setVisible(false);
@@ -195,7 +194,6 @@ public class Client implements ActionListener {
                     }
                     questionWord = message.substring(4);
                     drawingPage.getQuestionLabel().setText(message.substring(4));
-                    System.out.println(questionWord);
                 } else if (message.contains("$tmr")) {
                     // Update time every one sec.
                     output.println("$usr" + nickname + "/" + Integer.toString(score));

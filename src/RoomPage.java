@@ -106,7 +106,6 @@ public class RoomPage extends CustomFrame {
         String roomInfo = null;
         try {
             if((roomInfo=input.readLine())!=null) {
-                System.out.println("CCCCC");
                 roomInfo = roomInfo.substring(1,roomInfo.length()-1);
                 roomInfo = roomInfo.replaceAll("\\s","");
                 String[] roomStringParse = roomInfo.split(",");
