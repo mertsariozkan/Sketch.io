@@ -2,7 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class ClientThread extends Thread {
     private Socket socket;
@@ -13,8 +13,9 @@ public class ClientThread extends Thread {
     private String nickname;
     private int roomId;
     private boolean loop = true;
+    private ArrayList<Integer> roomInfo;
 
-    public ClientThread(Socket socket, BufferedReader input, PrintWriter output, int roomId) throws SQLException {
+    public ClientThread(Socket socket, BufferedReader input, PrintWriter output, int roomId) {
         this.socket = socket;
         this.input = input;
         this.output = output;
@@ -29,6 +30,8 @@ public class ClientThread extends Thread {
                 String message;
                 while (loop && (message = input.readLine()) != null) {
                     if (message.contains("$skipword")) {
+                        // Skip current word
+                        Server.correctAnswerCounter = 0;
                         createUserList(message);
                         databaseOperations.connectToDatabase();
                         String randomQ = databaseOperations.randomQuestion();
@@ -37,8 +40,10 @@ public class ClientThread extends Thread {
                         broadcastMessage(Server.userLists.get(roomId));
                     } else if (message.contains("$usr")) {
                         createUserList(message);
+                        broadcastMessage(Server.userLists.get(roomId));
                     } else if (message.contains("$scs")) {
                         Server.correctAnswerCounter++;
+                        broadcastMessage(message);
                         if (Server.correctAnswerCounter == Server.rooms.get(roomId).getClientOutputs().size() - 1) {
                             Server.correctAnswerCounter = 0;
                             databaseOperations.connectToDatabase();
@@ -54,6 +59,14 @@ public class ClientThread extends Thread {
                     } else if (message.contains("$ovx")) {
                         createUserList(message);
                         broadcastMessage(Server.userLists.get(roomId));
+                    } else if(message.contains("$gR")) {
+                        // Update room info.
+                        roomInfo = new ArrayList<>();
+                        for(Room r : Server.rooms) {
+                            roomInfo.add(r.getClientOutputs().size());
+                        }
+                        output.println(roomInfo);
+                        output.flush();
                     } else if (message.equals("$cls")) {
                         broadcastMessage(message);
                         loop = false;
@@ -62,9 +75,9 @@ public class ClientThread extends Thread {
                     }
                 }
             }
-        } catch (IOException | SQLException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
         } finally {
+            // Update userlist and room accordingly if client disconnects.
             Server.rooms.set(roomId, new Room(roomId));
             Server.userLists.set(roomId, null);
             Server.statusOfRoomAvailability.set(roomId, true);
@@ -78,7 +91,7 @@ public class ClientThread extends Thread {
         }
     }
 
-
+    // Create info from incoming message by parsing them to analyze nickname and score.
     public void createUserList(String message) {
         String tempMessage = null;
         if (message.contains("$usr")) {

@@ -1,8 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.SQLException;
 
 public class LoginPage extends CustomFrame {
     public LoginPage() {
@@ -19,15 +16,11 @@ public class LoginPage extends CustomFrame {
         addWordButton.setBounds(pageWidth * 5 / 7, pageHeight * 5 / 6, pageWidth / 4, pageHeight / 16);
         addWordButton.addActionListener(e -> {
             String question = JOptionPane.showInputDialog(this, "Add new question word");
-            if (!question.equals("")) {
+            if (question != null && !question.equals("")) {
                 question = question.toUpperCase();
-                try {
-                    DatabaseOperations databaseOperations = new DatabaseOperations();
-                    databaseOperations.addQuestionWord(question);
-                    databaseOperations.closeConnection();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
+                DatabaseOperations databaseOperations = new DatabaseOperations();
+                databaseOperations.addQuestionWord(question);
+                databaseOperations.closeConnection();
             }
         });
 
@@ -35,7 +28,7 @@ public class LoginPage extends CustomFrame {
         nicknameText.setBounds(pageWidth * 3 / 8, pageHeight / 2, pageWidth / 4, pageHeight / 16);
 
         JLabel warning = new JLabel();
-        warning.setBounds(pageWidth * 3 / 7, pageHeight * 18 / 32, pageWidth / 4, pageHeight / 16);
+        warning.setBounds(pageWidth * 31 / 70, pageHeight * 18 / 32, pageWidth / 4, pageHeight / 16);
 
         JButton loginButton = new JButton("Login");
         getRootPane().setDefaultButton(loginButton);
